@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+dist/ build/ .next/ .cache/
+docker-compose.override.yml
+.vscode/ .idea/ *.swp
+.DS_Store Thumbs.db
+logs/ *.log
+data/ backups/
