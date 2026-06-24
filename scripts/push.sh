@@ -31,8 +31,8 @@ if [ -z "$COMMIT_MSG" ]; then
   COMMIT_MSG="chore: update docs and config ($TOTAL files)"
 fi
 
-# Stage all changes
-git add -A
+# Stage tracked changes only (avoids accidentally staging secrets or untracked files)
+git add -u
 
 # Check if there's anything to commit
 if git diff --cached --quiet 2>/dev/null; then
