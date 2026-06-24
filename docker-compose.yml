@@ -38,8 +38,8 @@ services:
   api-gateway:
     <<: *backend-service
     build:
-      context: ./src/api-gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/api-gateway/Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -56,8 +56,8 @@ services:
   deploy-service:
     <<: *backend-service
     build:
-      context: ./src/deploy-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/deploy-service/Dockerfile
     ports:
       - "3001:3001"
     environment:
@@ -76,8 +76,8 @@ services:
   payment-service:
     <<: *backend-service
     build:
-      context: ./src/payment-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/payment-service/Dockerfile
     ports:
       - "3002:3002"
     environment:
@@ -89,8 +89,8 @@ services:
   seo-service:
     <<: *backend-service
     build:
-      context: ./src/seo-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/seo-service/Dockerfile
     ports:
       - "3003:3003"
     environment:

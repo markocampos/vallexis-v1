@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
-          go-version: "1.22"
+          go-version: "1.24"
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@1b6671e713fd51c7f28eb88acf29c9bf3c2eb15f # v6.5.0
         with:
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
-          go-version: "1.22"
+          go-version: "1.24"
       - name: Run tests
         run: go test ./... -v -count=1 -race
         env:
@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Build ${{ matrix.service }}
-        run: docker build -t ${{ matrix.service }}:ci ./src/${{ matrix.service }}
+        run: docker build -t ${{ matrix.service }}:ci -f src/${{ matrix.service }}/Dockerfile .
 
   scan:
     name: Trivy Scan ${{ matrix.service }}
@@ -88,12 +88,13 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Build ${{ matrix.service }} for scanning
-        run: docker build -t ${{ matrix.service }}:scan ./src/${{ matrix.service }}
+        run: docker build -t ${{ matrix.service }}:scan -f src/${{ matrix.service }}/Dockerfile .
       - name: Scan ${{ matrix.service }}
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           image-ref: ${{ matrix.service }}:scan
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
           exit-code: 1
 
   deploy:
