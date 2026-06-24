@@ -3,6 +3,7 @@ RUN apk add --no-cache git
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
+COPY src/internal/ src/internal/
 COPY src/payment-service/ src/payment-service/
 RUN CGO_ENABLED=0 go build -o /payment-service ./src/payment-service
 
