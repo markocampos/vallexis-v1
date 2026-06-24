@@ -16,7 +16,7 @@ if [ ! -d .git ]; then
 fi
 
 # Check for remote
-REMOTE=$(git remote 2>/dev/null | head -1)
+REMOTE=$(git remote | head -1)
 if [ -z "$REMOTE" ]; then
   echo "Error: No git remote configured." >&2
   echo "Add one with: git remote add origin <url>" >&2
@@ -25,8 +25,8 @@ fi
 
 # Auto-generate commit message if not provided
 if [ -z "$COMMIT_MSG" ]; then
-  CHANGED=$(git diff --name-only 2>/dev/null | wc -l)
-  UNTRACKED=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l)
+  CHANGED=$(git diff --name-only | wc -l)
+  UNTRACKED=$(git ls-files --others --exclude-standard | wc -l)
   TOTAL=$((CHANGED + UNTRACKED))
   COMMIT_MSG="chore: update docs and config ($TOTAL files)"
 fi
@@ -35,7 +35,7 @@ fi
 git add -A
 
 # Check if there's anything to commit
-if git diff --cached --quiet 2>/dev/null; then
+if git diff --cached --quiet; then
   echo "Nothing to commit."
   exit 0
 fi
@@ -45,7 +45,14 @@ git commit -m "$COMMIT_MSG"
 
 # Push
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" = "HEAD" ]; then
+  echo "Error: Detached HEAD state. Check out a branch before pushing." >&2
+  exit 1
+fi
 echo "Pushing to $REMOTE/$BRANCH..."
-git push "$REMOTE" "$BRANCH"
+if ! git push "$REMOTE" "$BRANCH"; then
+  echo "Error: Push to $REMOTE/$BRANCH failed." >&2
+  exit 1
+fi
 
 echo "Done."
