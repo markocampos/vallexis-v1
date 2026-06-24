@@ -13,7 +13,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 for svc in "${SERVICES[@]}"; do
   echo "Building ${svc}:${TAG} ..."
-  docker build -t "${svc}:${TAG}" "${REPO_ROOT}/${SRC_DIR}/${svc}"
+  docker build -t "${svc}:${TAG}" -f "${REPO_ROOT}/${SRC_DIR}/${svc}/Dockerfile" "${REPO_ROOT}"
 done
 
 echo "All images built with tag :${TAG}"
