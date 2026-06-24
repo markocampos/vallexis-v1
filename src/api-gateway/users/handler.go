@@ -71,6 +71,11 @@ func (h *Handler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Name == "" {
+		h.GetMe(w, r)
+		return
+	}
+
 	_, err := h.db.ExecContext(r.Context(),
 		`UPDATE users SET name = $1 WHERE id = $2`, req.Name, userID,
 	)
