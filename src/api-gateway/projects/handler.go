@@ -4,10 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/markocampos/vallexis-v1/src/internal/httpx"
@@ -87,17 +88,21 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func isUniqueViolation(err error) bool {
-	return strings.Contains(err.Error(), "unique") || strings.Contains(err.Error(), "23505")
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code == "23505"
+	}
+	return false
 }
 
 func appendRandomSuffix(base string) string {
 	b := make([]byte, 3)
 	_, _ = rand.Read(b)
 	suffix := hex.EncodeToString(b)
-	result := fmt.Sprintf("%s-%s", base, suffix)
-	if len(result) > MaxSubdomainLength {
-		result = result[:MaxSubdomainLength]
-		result = strings.TrimRight(result, "-")
+	maxBase := MaxSubdomainLength - 1 - len(suffix)
+	if len(base) > maxBase {
+		base = base[:maxBase]
+		base = strings.TrimRight(base, "-")
 	}
-	return result
+	return base + "-" + suffix
 }
