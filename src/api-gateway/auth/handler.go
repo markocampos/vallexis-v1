@@ -49,11 +49,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := ValidateRegisterRequest(RegisterRequest{
-		Email:    req.Email,
-		Password: req.Password,
-		Name:     req.Name,
-	})
+	errs := ValidateRegisterRequest(RegisterRequest(req))
 	if len(errs) > 0 {
 		msgs := make([]string, len(errs))
 		for i, e := range errs {
@@ -92,11 +88,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.WriteJSON(w, http.StatusCreated, tokenResponse{
-		AccessToken:  pair.AccessToken,
-		RefreshToken: pair.RefreshToken,
-		ExpiresIn:    pair.ExpiresIn,
-	})
+	httpx.WriteJSON(w, http.StatusCreated, tokenResponse(pair))
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +98,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := ValidateLoginRequest(LoginRequest{Email: req.Email, Password: req.Password})
+	errs := ValidateLoginRequest(LoginRequest(req))
 	if len(errs) > 0 {
 		msgs := make([]string, len(errs))
 		for i, e := range errs {
@@ -141,11 +133,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.WriteJSON(w, http.StatusOK, tokenResponse{
-		AccessToken:  pair.AccessToken,
-		RefreshToken: pair.RefreshToken,
-		ExpiresIn:    pair.ExpiresIn,
-	})
+	httpx.WriteJSON(w, http.StatusOK, tokenResponse(pair))
 }
 
 func (h *Handler) issueTokenPair(userID, email string) (TokenPair, error) {

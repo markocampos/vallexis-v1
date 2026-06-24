@@ -46,11 +46,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := ValidateCreateRequest(CreateRequest{
-		Name:      req.Name,
-		GitRepo:   req.GitRepo,
-		GitBranch: req.GitBranch,
-	})
+	errs := ValidateCreateRequest(CreateRequest(req))
 	if len(errs) > 0 {
 		msgs := make([]string, len(errs))
 		for i, e := range errs {

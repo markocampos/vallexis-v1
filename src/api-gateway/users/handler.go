@@ -66,7 +66,7 @@ func (h *Handler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := ValidateUpdateProfile(UpdateProfileRequest{Name: req.Name}); err != nil {
+	if err := ValidateUpdateProfile(UpdateProfileRequest(req)); err != nil {
 		httpx.WriteError(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
