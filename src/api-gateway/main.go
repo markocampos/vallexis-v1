@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/rsa"
 	"log"
 	"net/http"
 	"os"
@@ -29,11 +28,9 @@ func main() {
 
 	db, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
-		log.Printf("WARNING: database unavailable: %v", err)
+		log.Fatalf("database unavailable: %v", err)
 	}
-	if db != nil {
-		defer db.Close()
-	}
+	defer db.Close()
 
 	rdb, err := cache.Connect(cfg.RedisURL)
 	if err != nil {
@@ -43,15 +40,13 @@ func main() {
 		defer rdb.Close()
 	}
 
-	var privateKey *rsa.PrivateKey
 	keyData, err := os.ReadFile(cfg.JWTPrivateKeyPath)
 	if err != nil {
-		log.Printf("WARNING: JWT private key not found at %s: %v", cfg.JWTPrivateKeyPath, err)
-	} else {
-		privateKey, err = jwt.ParseRSAPrivateKeyFromPEM(keyData)
-		if err != nil {
-			log.Printf("WARNING: JWT private key parse error: %v", err)
-		}
+		log.Fatalf("JWT private key not found at %s: %v", cfg.JWTPrivateKeyPath, err)
+	}
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(keyData)
+	if err != nil {
+		log.Fatalf("JWT private key parse error: %v", err)
 	}
 
 	r := httpx.NewRouter()
@@ -120,7 +115,12 @@ func healthHandler(db *sqlx.DB, rdb *redis.Client) http.HandlerFunc {
 			status = "degraded"
 		}
 
-		httpx.WriteJSON(w, http.StatusOK, map[string]string{
+		code := http.StatusOK
+		if status != "ok" {
+			code = http.StatusServiceUnavailable
+		}
+
+		httpx.WriteJSON(w, code, map[string]string{
 			"status":  status,
 			"service": "api-gateway",
 			"db":      dbStatus,
