@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "api-gateway"
+    static_configs:
+      - targets: ["api-gateway:3000"]
+
+  - job_name: "deploy-service"
+    static_configs:
+      - targets: ["deploy-service:3001"]
+
+  - job_name: "payment-service"
+    static_configs:
+      - targets: ["payment-service:3002"]
+
+  - job_name: "seo-service"
+    static_configs:
+      - targets: ["seo-service:3003"]

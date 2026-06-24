@@ -1,29 +1,32 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/markocampos/vallexis-v1/src/internal/config"
+	"github.com/markocampos/vallexis-v1/src/internal/httpx"
 )
 
 func main() {
-	port := os.Getenv("SEO_PORT")
-	if port == "" {
-		port = "3003"
-	}
+	cfg := config.Load()
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"status":"ok","service":"seo-service"}`))
+	r := httpx.NewRouter()
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		httpx.WriteJSON(w, http.StatusOK, map[string]string{
+			"status":  "ok",
+			"service": "seo-service",
+		})
 	})
 
 	srv := &http.Server{
-		Addr:         ":" + port,
-		Handler:      mux,
+		Addr:         ":" + cfg.SEOPort,
+		Handler:      r,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -34,10 +37,14 @@ func main() {
 		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 		<-sig
 		log.Println("shutting down seo-service")
-		srv.Close()
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Printf("shutdown error: %v", err)
+		}
 	}()
 
-	log.Printf("seo-service listening on :%s", port)
+	log.Printf("seo-service listening on :%s", cfg.SEOPort)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("seo-service failed: %v", err)
 	}
