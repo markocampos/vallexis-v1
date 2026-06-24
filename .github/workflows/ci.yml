@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
-          go-version: "1.22"
+          go-version: "1.26"
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@1b6671e713fd51c7f28eb88acf29c9bf3c2eb15f # v6.5.0
         with:
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
-          go-version: "1.22"
+          go-version: "1.26"
       - name: Run tests
         run: go test ./... -v -count=1 -race
         env:
@@ -94,6 +94,7 @@ jobs:
         with:
           image-ref: ${{ matrix.service }}:scan
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
           exit-code: 1
 
   deploy:

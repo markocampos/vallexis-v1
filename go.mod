@@ -1,5 +1,5 @@
 module github.com/markocampos/vallexis-v1
 
-go 1.24
+go 1.26
 
 require golang.org/x/crypto v0.24.0
