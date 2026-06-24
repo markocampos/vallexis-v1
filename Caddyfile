@@ -1,13 +1,7 @@
 # Caddyfile — Vallexis Reverse Proxy
 # See docs/PRODUCTION.md for setup instructions
 
-vallexis.io {
-    redir https://app.vallexis.io{uri}
-}
-
-app.vallexis.io {
-    reverse_proxy react-frontend:5173
-
+(security_headers) {
     header {
         X-Content-Type-Options nosniff
         X-Frame-Options DENY
@@ -18,17 +12,21 @@ app.vallexis.io {
     }
 }
 
+vallexis.io {
+    redir https://app.vallexis.io{uri}
+}
+
+app.vallexis.io {
+    reverse_proxy react-frontend:5173
+    import security_headers
+}
+
 api.vallexis.io {
     reverse_proxy api-gateway:3000 {
         header_up X-Real-IP {remote_host}
     }
-
+    import security_headers
     header {
-        X-Content-Type-Options nosniff
-        X-Frame-Options DENY
-        Referrer-Policy strict-origin-when-cross-origin
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
-        Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
     }
 }

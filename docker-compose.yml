@@ -3,6 +3,19 @@
 # Usage: docker compose up -d
 # =============================================================================
 
+x-backend-service: &backend-service
+  env_file: .env
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 10s
+
 services:
   # --- Reverse Proxy ---
   caddy:
@@ -23,12 +36,12 @@ services:
 
   # --- Backend Services ---
   api-gateway:
+    <<: *backend-service
     build:
       context: ./src/api-gateway
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    env_file: .env
     environment:
       - API_PORT=3000
     depends_on:
@@ -38,19 +51,15 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
+      <<: *healthcheck-defaults
 
   deploy-service:
+    <<: *backend-service
     build:
       context: ./src/deploy-service
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
-    env_file: .env
     environment:
       - DEPLOY_PORT=3001
     volumes:
@@ -62,51 +71,33 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
+      <<: *healthcheck-defaults
 
   payment-service:
+    <<: *backend-service
     build:
       context: ./src/payment-service
       dockerfile: Dockerfile
     ports:
       - "3002:3002"
-    env_file: .env
     environment:
       - PAYMENT_PORT=3002
-    depends_on:
-      postgres:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3002/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
+      <<: *healthcheck-defaults
 
   seo-service:
+    <<: *backend-service
     build:
       context: ./src/seo-service
       dockerfile: Dockerfile
     ports:
       - "3003:3003"
-    env_file: .env
     environment:
       - SEO_PORT=3003
-    depends_on:
-      postgres:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3003/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
+      <<: *healthcheck-defaults
 
   # --- Frontend ---
   react-frontend:

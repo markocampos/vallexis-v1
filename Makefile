@@ -2,16 +2,16 @@
 
 COMPOSE_DEV := docker compose -f docker-compose.dev.yml
 
+# All backend Go services — single source of truth
+SERVICES := api-gateway deploy-service payment-service seo-service
+
 help: ## List all available make commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 # --- Development ---
 
 dev-backend: ## Start all backend services with hot-reload
-	air -c .air.toml -- api-gateway & \
-	air -c .air.toml -- deploy-service & \
-	air -c .air.toml -- payment-service & \
-	air -c .air.toml -- seo-service
+	@$(foreach svc,$(SERVICES),air -c .air.toml -- $(svc) &) wait
 
 dev-api: ## Start api-gateway only
 	air -c .air.toml -- api-gateway
@@ -65,10 +65,7 @@ fmt: ## Format all Go code
 	goimports -w .
 
 scan: ## Run Trivy security scan on all images
-	trivy image --severity CRITICAL,HIGH api-gateway:latest
-	trivy image --severity CRITICAL,HIGH deploy-service:latest
-	trivy image --severity CRITICAL,HIGH payment-service:latest
-	trivy image --severity CRITICAL,HIGH seo-service:latest
+	@$(foreach svc,$(SERVICES),trivy image --severity CRITICAL,HIGH $(svc):latest;)
 
 # --- Docker ---
 
