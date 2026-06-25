@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Border radius */
+    --radius: 0.75rem;
+
+    /* Brand colors */
+    --blue-primary: #1E88E5;
+    --blue-vivid: #2196F3;
+    --blue-glow: #4FC3F7;
+
+    /* Neutral colors - dark mode (default) */
+    --bg-deep: #060A14;
+    --bg-surface: #0D1525;
+    --bg-card: rgba(30, 136, 229, 0.04);
+    --bg-overlay: rgba(6, 10, 20, 0.85);
+    --border-subtle: rgba(30, 136, 229, 0.08);
+    --border-interactive: rgba(30, 136, 229, 0.3);
+    --text-primary: #E8EDF5;
+    --text-secondary: #90CAF9;
+    --text-muted: #4A6080;
+
+    /* Semantic colors */
+    --success: #66BB6A;
+    --warning: #FFD54F;
+    --error: #EF5350;
+
+    /* Spacing scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-8: 48px;
+    --space-10: 64px;
+    --space-12: 80px;
+    --space-16: 128px;
+
+    /* Animation durations */
+    --duration-instant: 50ms;
+    --duration-fast: 150ms;
+    --duration-base: 200ms;
+    --duration-slow: 300ms;
+    --duration-deliberate: 500ms;
+
+    /* Easing functions */
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-linear: linear;
+  }
+
+  [data-theme="light"] {
+    /* Light mode overrides */
+    --bg-deep: #F4F7FC;
+    --bg-surface: #FFFFFF;
+    --bg-card: rgba(30, 136, 229, 0.03);
+    --bg-overlay: rgba(244, 247, 252, 0.92);
+    --border-subtle: rgba(30, 136, 229, 0.12);
+    --border-interactive: rgba(30, 136, 229, 0.4);
+    --text-primary: #0D1525;
+    --text-secondary: #1565C0;
+    --text-muted: #6B8CAE;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
+
+  body {
+    background-color: var(--bg-deep);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
