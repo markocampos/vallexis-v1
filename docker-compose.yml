@@ -19,7 +19,9 @@ x-healthcheck-defaults: &healthcheck-defaults
 services:
   # --- Reverse Proxy ---
   caddy:
-    image: caddy:2-alpine
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
     ports:
       - "80:80"
       - "443:443"
