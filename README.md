@@ -3,10 +3,22 @@
 > **All-in-one PaaS for solo founders and small teams.**  
 > Deploy. Monetise. Grow. — without enterprise costs.
 
-[![CI](https://github.com/markocampos/vallexis-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/vallexis/vallexis/actions)
+[![CI](https://github.com/markocampos/vallexis-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/markocampos/vallexis-v1/actions)
 [![Version](https://img.shields.io/badge/version-0.2.0-blue)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](#license)
-[![Uptime](https://img.shields.io/badge/uptime-99.8%25-brightgreen)](https://status.vallexis.io)
+[![Status](https://img.shields.io/website?down_color=red&down_message=offline&label=uptime&up_color=success&up_message=online&url=https%3A%2F%2Fvallexis.io)](https://status.vallexis.io)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/markocampos/vallexis-v1)](go.mod)
+[![Last Commit](https://img.shields.io/github/last-commit/markocampos/vallexis-v1)](https://github.com/markocampos/vallexis-v1/commits/main)
+[![Issues](https://img.shields.io/github/issues/markocampos/vallexis-v1)](https://github.com/markocampos/vallexis-v1/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
+[![Security Scanned](https://img.shields.io/badge/security-Trivy_scanned-blueviolet.svg)](.github/workflows/ci.yml)
+
+[![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://react.dev)
+[![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)](https://go.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io/)
 
 ---
 
