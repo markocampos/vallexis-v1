@@ -18,8 +18,7 @@ RUN xcaddy build ${CADDY_VERSION} --output /usr/bin/caddy
 # ---- Production Stage ----
 FROM alpine:3.23
 
-RUN apk add --no-cache ca-certificates libcap mailcap \
-    && setcap cap_net_bind_service=+ep /usr/bin/caddy || true
+RUN apk add --no-cache ca-certificates libcap mailcap
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
