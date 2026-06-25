@@ -1,11 +1,93 @@
-node_modules/
+# =========================
+# Operating System Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =========================
+# Environment Variables
+# =========================
 .env
 .env.local
-dist/ build/ .next/ .cache/
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# =========================
+# IDEs and Editors
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.mimocode/
+
+# =========================
+# Go (Backend Services)
+# =========================
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test output
+*.test
+*.out
+coverage.txt
+coverage.out
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor
+vendor/
+
+# =========================
+# Node / Frontend (React + Vite)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+.cache/
+.vite/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# =========================
+# Docker
+# =========================
 docker-compose.override.yml
-.vscode/ .idea/ *.swp
-.DS_Store Thumbs.db
-logs/ *.log
-data/ backups/
+
+# =========================
+# Logs, Data, and Secrets
+# =========================
+logs/
+*.log
+data/
+backups/
 secrets/
 *.pem
