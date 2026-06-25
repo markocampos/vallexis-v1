@@ -18,7 +18,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [0.2.0] — 2026-06-15
+## [0.1.0] — 2026-06-24
 
 ### Added
 - **SEO Toolkit:** automated weekly Lighthouse audits (performance, accessibility, SEO, best-practices scores), sitemap.xml generation, robots.txt validation, per-project SEO dashboard
@@ -28,33 +28,6 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - **Live deploy log streaming:** SSE endpoint delivers structured build logs to the dashboard in real time; no polling required
 - **Audit logging:** all admin and user actions written to `audit_log` table; 90-day hot retention, then archived
 - **AGENTS.md:** documented all automated background agents (CI/CD, monitoring, backup, SEO crawl, cert renewal)
-
-### Changed
-- Runtime upgraded from Go 1.21 → **Go 1.22** (improved range-over-int, improved slices package)
-- Base OS upgraded from Ubuntu 22.04 → **Ubuntu 24.04 LTS**
-- Docker build caching strategy refactored — layer ordering optimised; rebuild time reduced by **~50%**
-- `deploy-service` now uses parallel `docker pull` for base images before build start
-- Caddy replaces Nginx as TLS-terminating reverse proxy — zero-config HTTPS, automatic renewal
-
-### Fixed
-- Payment webhook timeout increased to 30 seconds (was 5s — caused false PayMongo retries)
-- ARM-native Go modules replaced `x86`-only CGO dependencies
-- Caddy config reload race condition on zero-downtime redeploy
-- SSE connection memory leak in `deploy-service` (goroutines not cleaned up on client disconnect)
-- Admin user count query returned stale result due to missing `COUNT(DISTINCT id)` — fixed
-
-### Security
-- 5 CVEs patched in Go dependencies (`net/http`, `crypto/tls` stack)
-- `Content-Security-Policy` header added to all API responses
-- Fail2Ban configured and enabled; 5 SSH failures → 1-hour IP ban
-- Docker images rebuilt from scratch with Trivy scan — zero CRITICAL/HIGH CVEs at release time
-- `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` added to all responses
-
----
-
-## [0.1.0] — 2026-05-20
-
-### Added
 - **Core auth system:** email/password registration with bcrypt (cost 12) + HIBP check; JWT RS256 access tokens (15 min) + refresh tokens (7 days)
 - **OAuth:** GitHub and Google sign-in (email + profile scopes)
 - **Projects:** create, list, view, delete; subdomain auto-assigned; Git repo + branch configuration
@@ -70,10 +43,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - **CI/CD pipeline:** GitHub Actions — test-runner on PR open/update; deploy-bot on push to `main`
 - **Admin dashboard:** user list, project list, system health at a glance
 
+### Security
+- 5 CVEs patched in Go dependencies (`net/http`, `crypto/tls` stack)
+- `Content-Security-Policy` header added to all API responses
+- Fail2Ban configured and enabled; 5 SSH failures → 1-hour IP ban
+- Docker images rebuilt from scratch with Trivy scan — zero CRITICAL/HIGH CVEs at release time
+- `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` added to all responses
+
 ---
 
 ## Links
 
-[Unreleased]: https://github.com/vallexis/vallexis/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/vallexis/vallexis/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/vallexis/vallexis/releases/tag/v0.1.0
