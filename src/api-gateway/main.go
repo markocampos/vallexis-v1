@@ -49,6 +49,15 @@ func main() {
 		log.Fatalf("JWT private key parse error: %v", err)
 	}
 
+	pubKeyData, err := os.ReadFile(cfg.JWTPublicKeyPath)
+	if err != nil {
+		log.Fatalf("JWT public key not found at %s: %v", cfg.JWTPublicKeyPath, err)
+	}
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(pubKeyData)
+	if err != nil {
+		log.Fatalf("JWT public key parse error: %v", err)
+	}
+
 	r := httpx.NewRouter()
 
 	r.Get("/api/health", healthHandler(db, rdb))
@@ -59,12 +68,16 @@ func main() {
 		v1.Post("/auth/register", authH.Register)
 		v1.Post("/auth/login", authH.Login)
 
-		projH := projects.NewHandler(db)
-		v1.Post("/projects", projH.Create)
+		v1.Group(func(protected chi.Router) {
+			protected.Use(auth.RequireAuth(publicKey))
 
-		userH := users.NewHandler(db)
-		v1.Get("/users/me", userH.GetMe)
-		v1.Patch("/users/me", userH.UpdateMe)
+			projH := projects.NewHandler(db)
+			protected.Post("/projects", projH.Create)
+
+			userH := users.NewHandler(db)
+			protected.Get("/users/me", userH.GetMe)
+			protected.Patch("/users/me", userH.UpdateMe)
+		})
 	})
 
 	srv := &http.Server{

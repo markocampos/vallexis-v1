@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/markocampos/vallexis-v1/src/api-gateway/auth"
 	"github.com/markocampos/vallexis-v1/src/internal/httpx"
 )
 
@@ -28,7 +29,7 @@ type userResponse struct {
 }
 
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
+	userID := auth.UserIDFromContext(r.Context())
 	if userID == "" {
 		httpx.WriteError(w, http.StatusUnauthorized, "missing user context")
 		return
@@ -54,7 +55,7 @@ type updateMeJSON struct {
 }
 
 func (h *Handler) UpdateMe(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
+	userID := auth.UserIDFromContext(r.Context())
 	if userID == "" {
 		httpx.WriteError(w, http.StatusUnauthorized, "missing user context")
 		return

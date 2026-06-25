@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 
+	"github.com/markocampos/vallexis-v1/src/api-gateway/auth"
 	"github.com/markocampos/vallexis-v1/src/internal/httpx"
 )
 
@@ -39,7 +40,7 @@ type projectResponse struct {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
+	userID := auth.UserIDFromContext(r.Context())
 	if userID == "" {
 		httpx.WriteError(w, http.StatusUnauthorized, "missing user context")
 		return
