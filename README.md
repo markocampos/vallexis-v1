@@ -6,6 +6,7 @@
 [![CI](https://github.com/markocampos/vallexis-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/markocampos/vallexis-v1/actions)
 [![Version](https://img.shields.io/badge/version-0.2.0-blue)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](#license)
+<<<<<<< HEAD
 [![Status](https://img.shields.io/website?down_color=red&down_message=offline&label=uptime&up_color=success&up_message=online&url=https%3A%2F%2Fvallexis.io)](https://status.vallexis.io)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/markocampos/vallexis-v1)](go.mod)
 [![Last Commit](https://img.shields.io/github/last-commit/markocampos/vallexis-v1)](https://github.com/markocampos/vallexis-v1/commits/main)
@@ -19,6 +20,15 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io/)
+=======
+[![Uptime](https://img.shields.io/badge/uptime-99.8%25-brightgreen)](https://status.vallexis.io)
+[![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](https://go.dev)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![Platform](https://img.shields.io/badge/Oracle_Cloud-ARM_A1-F80000?logo=oracle&logoColor=white)](https://www.oracle.com/cloud/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](docs/CONTRIBUTING.md)
+>>>>>>> 099c801afce1a71a22105c36a4dc7c89ed287866
 
 ---
 
