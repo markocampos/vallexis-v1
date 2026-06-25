@@ -3,7 +3,7 @@
 > **All-in-one PaaS for solo founders and small teams.**  
 > Deploy. Monetise. Grow. — without enterprise costs.
 
-[![CI](https://github.com/markocampos/vallexis-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/vallexis/vallexis/actions)
+[![CI](https://github.com/markocampos/vallexis-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/markocampos/vallexis-v1/actions)
 [![Version](https://img.shields.io/badge/version-0.2.0-blue)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](#license)
 [![Uptime](https://img.shields.io/badge/uptime-99.8%25-brightgreen)](https://status.vallexis.io)
