@@ -15,7 +15,11 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/markocampos/vallexis-v1/src/api-gateway/auth"
+	"github.com/markocampos/vallexis-v1/src/api-gateway/billing"
+	"github.com/markocampos/vallexis-v1/src/api-gateway/deploys"
 	"github.com/markocampos/vallexis-v1/src/api-gateway/projects"
+	"github.com/markocampos/vallexis-v1/src/api-gateway/seo"
+	"github.com/markocampos/vallexis-v1/src/api-gateway/storage"
 	"github.com/markocampos/vallexis-v1/src/api-gateway/users"
 	"github.com/markocampos/vallexis-v1/src/internal/cache"
 	"github.com/markocampos/vallexis-v1/src/internal/config"
@@ -58,7 +62,7 @@ func main() {
 		log.Fatalf("JWT public key parse error: %v", err)
 	}
 
-	r := httpx.NewRouter()
+	r := httpx.NewRouter(cfg.CORSAllowedOrigins)
 
 	r.Get("/api/health", healthHandler(db, rdb))
 
@@ -73,10 +77,40 @@ func main() {
 
 			projH := projects.NewHandler(db)
 			protected.Post("/projects", projH.Create)
+			protected.Get("/projects", projH.List)
+			protected.Delete("/projects/{id}", projH.Delete)
+
+			deployH := deploys.NewHandler(db)
+			protected.Get("/projects/{projectId}/deploys", deployH.List)
+			protected.Post("/projects/{projectId}/deploys", deployH.Create)
+			protected.Get("/projects/{projectId}/deploys/current", deployH.GetCurrent)
+			protected.Get("/projects/{projectId}/deploys/stream", deployH.Stream)
+
+			billingH := billing.NewHandler(db)
+			protected.Get("/billing/subscription", billingH.GetSubscription)
+			protected.Get("/billing/usage", billingH.GetUsage)
+			protected.Post("/billing/subscribe", billingH.Subscribe)
+			protected.Post("/billing/cancel", billingH.Cancel)
+
+			storageH := storage.NewHandler(db)
+			protected.Get("/storage/files", storageH.ListFiles)
+			protected.Get("/storage/stats", storageH.GetStats)
+			protected.Post("/storage/upload", storageH.Upload)
+			protected.Get("/storage/files/{id}", storageH.GetFile)
+			protected.Delete("/storage/files/{id}", storageH.Delete)
+
+			seoH := seo.NewHandler(db)
+			protected.Get("/seo/audits", seoH.ListAudits)
+			protected.Post("/seo/audit", seoH.RunAudit)
+			protected.Get("/seo/audits/{id}", seoH.GetAudit)
 
 			userH := users.NewHandler(db)
 			protected.Get("/users/me", userH.GetMe)
 			protected.Patch("/users/me", userH.UpdateMe)
+			protected.Get("/users/settings", userH.GetSettings)
+			protected.Put("/users/settings", userH.UpdateSettings)
+			protected.Put("/users/password", userH.UpdatePassword)
+			protected.Delete("/users/account", userH.DeleteAccount)
 		})
 	})
 

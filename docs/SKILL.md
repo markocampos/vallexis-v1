@@ -1,6 +1,6 @@
 # SKILL.md — Platform Capabilities Reference
 
-> **Version:** 0.2.0
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 Vallexis is an all-in-one PaaS for solo founders and small teams. This document is a quick-reference overview of platform capabilities, the tech stack, and integration ecosystem.
@@ -25,7 +25,7 @@ Vallexis is an all-in-one PaaS for solo founders and small teams. This document 
 
 ## Plan Comparison
 
-| Feature | Free | Pro (₱249/mo ~$4) | Enterprise |
+| Feature | Free | Pro (₱499/mo ~$8) | Enterprise |
 |---|---|---|---|
 | Projects | 1 | 2 | Unlimited |
 | Storage | 2 GB | 10 GB (5 GB × 2 projects) | Custom |

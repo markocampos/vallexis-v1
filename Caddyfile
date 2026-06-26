@@ -7,7 +7,7 @@
         X-Frame-Options DENY
         Referrer-Policy strict-origin-when-cross-origin
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.vallexis.io; frame-ancestors 'none'"
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'"
         Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
     }
 }
@@ -17,7 +17,14 @@ vallexis.io {
 }
 
 app.vallexis.io {
-    reverse_proxy react-frontend:5173
+    # Proxy API requests to the backend
+    @api {
+        path /api/*
+    }
+    reverse_proxy @api api-gateway:3000
+
+    # Serve frontend static files
+    reverse_proxy react-frontend:80
     import security_headers
 }
 

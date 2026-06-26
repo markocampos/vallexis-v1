@@ -7,20 +7,18 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/toaster';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Globe, Eye, EyeOff } from 'lucide-react';
+import { FadeIn } from '@/components/ui/animated';
+import { BackgroundPattern } from '@/components/ui/background-pattern';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { FaGithub, FaGoogle } from 'react-icons/fa';
 import { InlineLoader } from '@/components/ui/loading-spinner';
-
-// ─── Schema ───────────────────────────────────────────────────────────────────
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(12, 'Password must be at least 12 characters'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -40,8 +38,8 @@ export function Login() {
     try {
       await login(data.email, data.password);
       navigate('/dashboard');
-    } catch {
-      toastError('Sign in failed', 'Invalid email or password. Please try again.');
+    } catch (err: any) {
+      toastError('Sign in failed', err.message || 'Invalid email or password. Please try again.');
     }
   };
 
@@ -50,34 +48,62 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="font-heading text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+    <div className="min-h-screen flex">
+      {/* Left side - Brand */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <BackgroundPattern />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-primary/20 via-purple-primary/10 to-transparent" />
+
+        <div className="relative z-10 flex flex-col justify-center px-16">
+          <FadeIn>
+            <div className="font-heading text-3xl font-bold gradient-text mb-8">Vallexis</div>
+          </FadeIn>
+          <FadeIn delay={100}>
+            <h1 className="font-heading text-4xl font-bold mb-4">
+              Welcome back
+            </h1>
+          </FadeIn>
+          <FadeIn delay={200}>
+            <p className="text-text-secondary text-lg leading-relaxed max-w-md">
+              Sign in to access your dashboard and continue building amazing applications.
+            </p>
+          </FadeIn>
+        </div>
+      </div>
+
+      {/* Right side - Form */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <FadeIn className="w-full max-w-md">
+          <div className="lg:hidden font-heading text-xl sm:text-2xl font-bold gradient-text mb-6 sm:mb-8 text-center">Vallexis</div>
+
+          <div className="space-y-4 sm:space-y-6">
+            <div>
+              <h2 className="font-heading text-xl sm:text-2xl font-bold mb-2">Sign in to your account</h2>
+              <p className="text-text-secondary">
+                Enter your credentials to continue
+              </p>
+            </div>
+
             {/* OAuth Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 id="github-oauth-btn"
                 variant="outline"
                 onClick={() => handleOAuth('github')}
-                className="w-full"
+                className="h-11 glass"
                 type="button"
               >
-                <Globe className="mr-2 h-4 w-4" />
+                <FaGithub className="mr-2 h-4 w-4" />
                 GitHub
               </Button>
               <Button
                 id="google-oauth-btn"
                 variant="outline"
                 onClick={() => handleOAuth('google')}
-                className="w-full"
+                className="h-11 glass"
                 type="button"
               >
-                <Globe className="mr-2 h-4 w-4" />
+                <FaGoogle className="mr-2 h-4 w-4" />
                 Google
               </Button>
             </div>
@@ -88,14 +114,13 @@ export function Login() {
                 <span className="w-full border-t border-border-subtle" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-bg-surface px-2 text-text-muted">Or continue with</span>
+                <span className="bg-bg-deep px-3 text-text-muted">Or continue with</span>
               </div>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-              {/* Email */}
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
                   Email
                 </label>
@@ -104,17 +129,15 @@ export function Login() {
                   type="email"
                   placeholder="you@example.com"
                   aria-invalid={!!errors.email}
+                  className="h-11"
                   {...register('email')}
                 />
                 {errors.email && (
-                  <p role="alert" className="text-xs text-error mt-1">
-                    {errors.email.message}
-                  </p>
+                  <p role="alert" className="text-xs text-error">{errors.email.message}</p>
                 )}
               </div>
 
-              {/* Password */}
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
                   Password
                 </label>
@@ -124,7 +147,7 @@ export function Login() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     aria-invalid={!!errors.password}
-                    className="pr-10"
+                    className="h-11 pr-10"
                     {...register('password')}
                   />
                   <button
@@ -137,17 +160,14 @@ export function Login() {
                   </button>
                 </div>
                 {errors.password && (
-                  <p role="alert" className="text-xs text-error mt-1">
-                    {errors.password.message}
-                  </p>
+                  <p role="alert" className="text-xs text-error">{errors.password.message}</p>
                 )}
               </div>
 
-              {/* Submit */}
               <Button
                 id="login-submit-btn"
                 type="submit"
-                className="w-full"
+                className="w-full h-11 bg-blue-primary hover:bg-blue-vivid"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -156,20 +176,23 @@ export function Login() {
                     Signing in...
                   </span>
                 ) : (
-                  'Sign in'
+                  <span className="flex items-center gap-2">
+                    Sign in
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
                 )}
               </Button>
             </form>
 
-            <div className="text-center text-sm text-text-secondary">
+            <p className="text-center text-sm text-text-secondary">
               Don't have an account?{' '}
-              <Link to="/register" className="text-blue-primary hover:underline">
-                Sign up
+              <Link to="/register" className="text-blue-primary hover:underline font-medium">
+                Sign up for free
               </Link>
-            </div>
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </FadeIn>
+      </div>
     </div>
   );
 }

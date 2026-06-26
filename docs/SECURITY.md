@@ -1,5 +1,6 @@
 # SECURITY.md — Security Policies & Procedures
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 > **Owner:** Engineering Lead
 > **Review Cycle:** Quarterly

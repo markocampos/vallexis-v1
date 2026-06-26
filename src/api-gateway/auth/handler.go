@@ -6,10 +6,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/markocampos/vallexis-v1/src/internal/httpx"
@@ -73,7 +76,13 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		req.Email, hash, req.Name,
 	).Scan(&userID)
 	if err != nil {
-		httpx.WriteError(w, http.StatusConflict, "email already registered")
+		log.Printf("Register insert error: %v", err)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			httpx.WriteError(w, http.StatusConflict, "email already registered")
+			return
+		}
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to register user")
 		return
 	}
 

@@ -1,5 +1,6 @@
 # PRODUCTION.md — Production Deployment Guide
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 > **Target:** Oracle Cloud Always Free ARM A1 (2 OCPU / 12 GB RAM)
 
@@ -191,7 +192,7 @@ docker exec -i vallexis-postgres psql -U vallexis -d vallexis_db < migrations/00
 ```bash
 # Health checks
 curl -s https://api.vallexis.io/api/health | jq .
-# {"status":"ok","version":"0.2.0"}
+# {"status":"ok","version":"0.1.0"}
 
 # Frontend
 curl -sI https://app.vallexis.io

@@ -1,5 +1,6 @@
 # DISASTER-RECOVERY.md — Disaster Recovery Plan
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 > **Review Schedule:** Quarterly
 

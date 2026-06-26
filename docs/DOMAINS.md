@@ -1,7 +1,8 @@
 # DOMAINS.md — Custom Domain Setup Guide
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
-> **Plan Required:** Pro (₱249/mo) or Enterprise
+> **Plan Required:** Pro (₱499/mo) or Enterprise
 
 This guide explains how to connect a custom domain to your Vallexis project. Free plan projects use `<project>.vallexis.io` subdomains automatically.
 

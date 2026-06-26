@@ -1,11 +1,13 @@
+# syntax=docker/dockerfile:1
 FROM golang:1.26-alpine AS builder
 RUN apk add --no-cache git
 WORKDIR /build
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY src/internal/ src/internal/
 COPY src/api-gateway/ src/api-gateway/
-RUN CGO_ENABLED=0 go build -o /api-gateway ./src/api-gateway
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 go build -o /api-gateway ./src/api-gateway
 
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates wget

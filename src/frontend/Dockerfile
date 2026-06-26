@@ -23,16 +23,17 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install ALL deps (including devDeps — needed for vite build)
-RUN npm ci --frozen-lockfile
+# Use npm ci for reproducible builds
+RUN npm ci --frozen-lockfile --prefer-offline
 
 # Copy source code
 COPY . .
 
-# Build production bundle
+# Build production bundle with cache optimization
 ARG VITE_API_URL=/api/v1
 ENV VITE_API_URL=${VITE_API_URL}
 
-RUN npm run build
+RUN npm run build && rm -rf node_modules
 
 # ---- Production Stage ----
 FROM alpine:3.23 AS production

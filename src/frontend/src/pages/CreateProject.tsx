@@ -7,21 +7,17 @@ import api from '@/lib/api';
 import { useToast } from '@/components/ui/toaster';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, GitBranch } from 'lucide-react';
+import { FadeIn } from '@/components/ui/animated';
+import { ArrowLeft, GitBranch, Globe, Rocket } from 'lucide-react';
 import { InlineLoader } from '@/components/ui/loading-spinner';
-
-// ─── Schema ───────────────────────────────────────────────────────────────────
+import { APP_DOMAIN } from '@/lib/config';
 
 const createProjectSchema = z.object({
   name: z
     .string()
     .min(2, 'Name must be at least 2 characters')
     .max(50, 'Name must be at most 50 characters')
-    .regex(
-      /^[a-zA-Z0-9-]+$/,
-      'Only alphanumeric characters and hyphens are allowed'
-    ),
+    .regex(/^[a-zA-Z0-9-]+$/, 'Only alphanumeric characters and hyphens are allowed'),
   gitRepo: z
     .string()
     .url('Must be a valid URL')
@@ -30,8 +26,6 @@ const createProjectSchema = z.object({
 });
 
 type CreateProjectFormValues = z.infer<typeof createProjectSchema>;
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function CreateProject() {
   const navigate = useNavigate();
@@ -50,11 +44,9 @@ export function CreateProject() {
   });
 
   const nameValue = watch('name', '');
-
-  // Live subdomain preview
   const subdomainPreview = nameValue
-    ? `${nameValue.toLowerCase().replace(/[^a-z0-9-]/g, '-')}.vallexis.app`
-    : 'your-app.vallexis.app';
+    ? `${nameValue.toLowerCase().replace(/[^a-z0-9-]/g, '-')}.${APP_DOMAIN}`
+    : `your-app.${APP_DOMAIN}`;
 
   const createMutation = useMutation({
     mutationFn: (data: { name: string; git_repo: string; git_branch: string }) =>
@@ -78,32 +70,31 @@ export function CreateProject() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-0">
-      <div className="mb-6">
-        <button
-          onClick={() => navigate('/dashboard/projects')}
-          className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Projects
-        </button>
-        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-text-primary mb-2">
-          Create New Project
-        </h1>
-        <p className="text-text-secondary">
-          Connect your Git repository to deploy your application
-        </p>
-      </div>
+      <FadeIn>
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/dashboard/projects')}
+            className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Projects
+          </button>
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold mb-2">
+            Create New Project
+          </h1>
+          <p className="text-text-secondary">
+            Connect your Git repository to deploy your application
+          </p>
+        </div>
+      </FadeIn>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Details</CardTitle>
-          <CardDescription>Enter your project information to get started</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      <FadeIn delay={100}>
+        <div className="rounded-2xl glass p-5 sm:p-6 md:p-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6" noValidate>
             {/* Project Name */}
-            <div className="space-y-1">
-              <label htmlFor="name" className="text-sm font-medium">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
+                <Rocket className="h-4 w-4 text-blue-primary" />
                 Project Name
               </label>
               <Input
@@ -111,23 +102,23 @@ export function CreateProject() {
                 type="text"
                 placeholder="my-awesome-app"
                 aria-invalid={!!errors.name}
+                className="h-11"
                 {...register('name')}
               />
               {errors.name ? (
-                <p role="alert" className="text-xs text-error mt-1">
-                  {errors.name.message}
-                </p>
+                <p role="alert" className="text-xs text-error">{errors.name.message}</p>
               ) : (
                 <p className="text-xs text-text-muted">
-                  Subdomain preview:{' '}
+                  Subdomain:{' '}
                   <span className="text-blue-primary font-mono">{subdomainPreview}</span>
                 </p>
               )}
             </div>
 
             {/* Git Repo */}
-            <div className="space-y-1">
-              <label htmlFor="gitRepo" className="text-sm font-medium">
+            <div className="space-y-2">
+              <label htmlFor="gitRepo" className="text-sm font-medium flex items-center gap-2">
+                <Globe className="h-4 w-4 text-purple-primary" />
                 Git Repository URL
               </label>
               <Input
@@ -135,50 +126,56 @@ export function CreateProject() {
                 type="url"
                 placeholder="https://github.com/username/repo"
                 aria-invalid={!!errors.gitRepo}
+                className="h-11"
                 {...register('gitRepo')}
               />
               {errors.gitRepo ? (
-                <p role="alert" className="text-xs text-error mt-1">
-                  {errors.gitRepo.message}
-                </p>
+                <p role="alert" className="text-xs text-error">{errors.gitRepo.message}</p>
               ) : (
                 <p className="text-xs text-text-muted">
-                  Public or private repository URL from GitHub, GitLab, or Bitbucket
+                  Public or private repository from GitHub, GitLab, or Bitbucket
                 </p>
               )}
             </div>
 
             {/* Git Branch */}
-            <div className="space-y-1">
-              <label htmlFor="gitBranch" className="text-sm font-medium">
+            <div className="space-y-2">
+              <label htmlFor="gitBranch" className="text-sm font-medium flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-success" />
                 Git Branch
               </label>
               <div className="relative">
-                <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                 <Input
                   id="gitBranch"
                   type="text"
                   placeholder="main"
                   aria-invalid={!!errors.gitBranch}
-                  className="pl-10"
+                  className="h-11"
                   {...register('gitBranch')}
                 />
               </div>
               {errors.gitBranch ? (
-                <p role="alert" className="text-xs text-error mt-1">
-                  {errors.gitBranch.message}
-                </p>
+                <p role="alert" className="text-xs text-error">{errors.gitBranch.message}</p>
               ) : (
                 <p className="text-xs text-text-muted">The branch to deploy (default: main)</p>
               )}
             </div>
 
+            {/* Preview */}
+            <div className="p-4 rounded-xl bg-bg-card/50 border border-border-subtle">
+              <p className="text-xs text-text-muted mb-2">Preview</p>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-success" />
+                <span className="text-sm font-mono text-text-secondary">{subdomainPreview}</span>
+              </div>
+            </div>
+
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => navigate('/dashboard/projects')}
-                className="flex-1 px-6 py-2 border border-border-subtle text-text-primary rounded-lg hover:bg-bg-card transition-colors"
+                className="flex-1 px-6 py-2.5 border border-border-subtle text-text-secondary rounded-xl hover:bg-bg-card hover:text-text-primary transition-all"
               >
                 Cancel
               </button>
@@ -186,7 +183,7 @@ export function CreateProject() {
                 id="create-project-submit-btn"
                 type="submit"
                 disabled={createMutation.isPending}
-                className="flex-1"
+                className="flex-1 h-11 bg-blue-primary hover:bg-blue-vivid"
               >
                 {createMutation.isPending ? (
                   <span className="flex items-center gap-2">
@@ -199,8 +196,8 @@ export function CreateProject() {
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </FadeIn>
     </div>
   );
 }

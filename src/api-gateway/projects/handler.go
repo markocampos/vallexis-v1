@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 
@@ -86,6 +87,69 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.WriteJSON(w, http.StatusCreated, p)
+}
+
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+	userID := auth.UserIDFromContext(r.Context())
+	if userID == "" {
+		httpx.WriteError(w, http.StatusUnauthorized, "missing user context")
+		return
+	}
+
+	rows, err := h.db.QueryxContext(r.Context(),
+		`SELECT id, name, git_repo, git_branch, subdomain, status, created_at
+		 FROM projects WHERE user_id = $1 ORDER BY created_at DESC`, userID,
+	)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to list projects")
+		return
+	}
+	defer rows.Close()
+
+	var projects []projectResponse
+	for rows.Next() {
+		var p projectResponse
+		if err := rows.StructScan(&p); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to scan project")
+			return
+		}
+		projects = append(projects, p)
+	}
+
+	if projects == nil {
+		projects = []projectResponse{}
+	}
+	httpx.WriteJSON(w, http.StatusOK, projects)
+}
+
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+	userID := auth.UserIDFromContext(r.Context())
+	if userID == "" {
+		httpx.WriteError(w, http.StatusUnauthorized, "missing user context")
+		return
+	}
+
+	projectID := chi.URLParam(r, "id")
+	if projectID == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "missing project id")
+		return
+	}
+
+	result, err := h.db.ExecContext(r.Context(),
+		`DELETE FROM projects WHERE id = $1 AND user_id = $2`, projectID, userID,
+	)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to delete project")
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		httpx.WriteError(w, http.StatusNotFound, "project not found")
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, map[string]string{"message": "project deleted"})
 }
 
 func isUniqueViolation(err error) bool {

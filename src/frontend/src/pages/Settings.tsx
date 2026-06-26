@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { User, Lock, Bell, Save, Trash2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { User, Lock, Bell, Save, Trash2, AlertTriangle } from 'lucide-react';
 
 interface UserSettings {
   id: string;
@@ -30,18 +30,15 @@ export function Settings() {
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications'>('profile');
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Profile form state
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [timezone, setTimezone] = useState('UTC');
   const [language, setLanguage] = useState('en');
 
-  // Security form state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Notifications state
   const [notifications, setNotifications] = useState({
     email: true,
     deploy: true,
@@ -111,8 +108,10 @@ export function Settings() {
 
   const deleteAccountMutation = useMutation({
     mutationFn: () => api.delete('users/account'),
-    onSuccess: () => {
-      logout();
+    onSuccess: () => { logout(); },
+    onError: () => {
+      setSaveMessage({ type: 'error', message: 'Failed to delete account' });
+      setTimeout(() => setSaveMessage(null), 3000);
     },
   });
 
@@ -126,15 +125,12 @@ export function Settings() {
       setTimeout(() => setSaveMessage(null), 3000);
       return;
     }
-    if (newPassword.length < 8) {
-      setSaveMessage({ type: 'error', message: 'Password must be at least 8 characters' });
+    if (newPassword.length < 12) {
+      setSaveMessage({ type: 'error', message: 'Password must be at least 12 characters' });
       setTimeout(() => setSaveMessage(null), 3000);
       return;
     }
-    updatePasswordMutation.mutate({
-      current_password: currentPassword,
-      new_password: newPassword,
-    });
+    updatePasswordMutation.mutate({ current_password: currentPassword, new_password: newPassword });
   };
 
   const handleNotificationsSave = () => {
@@ -150,303 +146,225 @@ export function Settings() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-text-muted">Loading settings...</div>
+        <LoadingSpinner size="md" text="Loading settings..." />
       </div>
     );
   }
 
+  const tabs = [
+    { id: 'profile' as const, label: 'Profile', icon: User },
+    { id: 'security' as const, label: 'Security', icon: Lock },
+    { id: 'notifications' as const, label: 'Notifications', icon: Bell },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-3xl font-bold text-text-primary mb-2">
-          Settings
-        </h1>
-        <p className="text-text-secondary">
-          Manage your account settings and preferences
-        </p>
-      </div>
+    <div className="space-y-3 sm:space-y-4">
+      <FadeIn>
+        <div>
+          <h1 className="font-heading text-lg sm:text-xl font-bold mb-1">Settings</h1>
+          <p className="text-xs text-text-secondary">Manage your account settings and preferences</p>
+        </div>
+      </FadeIn>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-border-subtle pb-2">
-        <Button
-          variant={activeTab === 'profile' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('profile')}
-          size="sm"
-        >
-          <User className="mr-2 h-4 w-4" />
-          Profile
-        </Button>
-        <Button
-          variant={activeTab === 'security' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('security')}
-          size="sm"
-        >
-          <Lock className="mr-2 h-4 w-4" />
-          Security
-        </Button>
-        <Button
-          variant={activeTab === 'notifications' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('notifications')}
-          size="sm"
-        >
-          <Bell className="mr-2 h-4 w-4" />
-          Notifications
-        </Button>
-      </div>
+      <FadeIn delay={100}>
+        <div className="flex gap-1 p-1 rounded-xl glass w-fit overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === tab.id
+                  ? 'bg-bg-card text-text-primary border border-border-interactive/30'
+                  : 'text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              <tab.icon className="h-3.5 w-3.5" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </FadeIn>
 
       {/* Save Message */}
       {saveMessage && (
-        <div className={`p-4 rounded-lg ${saveMessage.type === 'success' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
-          {saveMessage.message}
-        </div>
+        <FadeIn>
+          <div className={`p-3 rounded-lg glass border text-xs ${
+            saveMessage.type === 'success' ? 'border-success/30 text-success' : 'border-error/30 text-error'
+          }`}>
+            {saveMessage.message}
+          </div>
+        </FadeIn>
       )}
 
       {/* Profile Tab */}
       {activeTab === 'profile' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Information
-            </CardTitle>
-            <CardDescription>
-              Update your personal information and preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">
-                  Name
-                </label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                />
+        <FadeIn delay={200}>
+          <div className="rounded-xl glass p-3.5 sm:p-4 border border-border-subtle">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-primary/20 to-purple-primary/20 flex items-center justify-center border border-border-subtle">
+                <User className="h-4 w-4 text-blue-glow" />
+              </div>
+              <div>
+                <h2 className="font-heading text-sm font-semibold text-text-primary">Profile Information</h2>
+                <p className="text-[10px] text-text-secondary">Update your personal details</p>
+              </div>
+            </div>
+
+            <div className="space-y-3.5 max-w-lg">
+              <div className="space-y-1.5">
+                <label htmlFor="name" className="text-xs font-semibold text-text-secondary">Name</label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 text-xs rounded-lg border-border-subtle" />
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                />
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="text-xs font-semibold text-text-secondary">Email</label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-9 text-xs rounded-lg border-border-subtle" />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label htmlFor="timezone" className="text-sm font-medium">
-                    Timezone
-                  </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="timezone" className="text-xs font-semibold text-text-secondary">Timezone</label>
                   <select
                     id="timezone"
                     value={timezone}
                     onChange={(e) => setTimezone(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-subtle rounded-lg bg-bg-surface text-text-primary"
+                    className="w-full h-9 px-2 text-xs rounded-lg border border-border-subtle bg-bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-blue-primary/30"
                   >
                     <option value="UTC">UTC</option>
                     <option value="America/New_York">Eastern Time</option>
                     <option value="America/Chicago">Central Time</option>
-                    <option value="America/Denver">Mountain Time</option>
                     <option value="America/Los_Angeles">Pacific Time</option>
                     <option value="Europe/London">London</option>
                     <option value="Europe/Paris">Paris</option>
                     <option value="Asia/Tokyo">Tokyo</option>
-                    <option value="Asia/Shanghai">Shanghai</option>
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="language" className="text-sm font-medium">
-                    Language
-                  </label>
+                <div className="space-y-1.5">
+                  <label htmlFor="language" className="text-xs font-semibold text-text-secondary">Language</label>
                   <select
                     id="language"
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-subtle rounded-lg bg-bg-surface text-text-primary"
+                    className="w-full h-9 px-2 text-xs rounded-lg border border-border-subtle bg-bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-blue-primary/30"
                   >
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
                     <option value="fr">French</option>
                     <option value="de">German</option>
                     <option value="ja">Japanese</option>
-                    <option value="zh">Chinese</option>
                   </select>
                 </div>
               </div>
 
-              <Button
-                onClick={handleProfileSave}
-                disabled={updateProfileMutation.isPending}
-                className="w-full sm:w-auto"
-              >
-                <Save className="mr-2 h-4 w-4" />
+              <Button onClick={handleProfileSave} disabled={updateProfileMutation.isPending} size="sm" className="bg-blue-primary hover:bg-blue-vivid text-xs h-8 px-3.5 rounded-lg mt-1">
+                <Save className="mr-1.5 h-3.5 w-3.5" />
                 {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </FadeIn>
       )}
 
       {/* Security Tab */}
       {activeTab === 'security' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              Security
-            </CardTitle>
-            <CardDescription>
-              Update your password and security settings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="currentPassword" className="text-sm font-medium">
-                  Current Password
-                </label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
+        <FadeIn delay={200}>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="rounded-xl glass p-3.5 sm:p-4 border border-border-subtle">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center border border-border-subtle">
+                  <Lock className="h-4 w-4 text-success" />
+                </div>
+                <div>
+                  <h2 className="font-heading text-sm font-semibold text-text-primary">Change Password</h2>
+                  <p className="text-[10px] text-text-secondary">Update your password regularly</p>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="newPassword" className="text-sm font-medium">
-                  New Password
-                </label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm New Password
-                </label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <Button
-                onClick={handlePasswordSave}
-                disabled={updatePasswordMutation.isPending}
-                className="w-full sm:w-auto"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {updatePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
-              </Button>
-
-              <div className="border-t border-border-subtle pt-6">
-                <h3 className="font-medium mb-2 text-error">Danger Zone</h3>
-                <p className="text-sm text-text-secondary mb-4">
-                  Once you delete your account, there is no going back. Please be certain.
-                </p>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAccount}
-                  disabled={deleteAccountMutation.isPending}
-                  className="w-full sm:w-auto"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
+              <div className="space-y-3 max-w-lg">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-text-secondary">Current Password</label>
+                  <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="h-9 text-xs rounded-lg border-border-subtle" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-text-secondary">New Password</label>
+                  <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-9 text-xs rounded-lg border-border-subtle" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-text-secondary">Confirm New Password</label>
+                  <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-9 text-xs rounded-lg border-border-subtle" />
+                </div>
+                <Button onClick={handlePasswordSave} disabled={updatePasswordMutation.isPending} size="sm" className="bg-blue-primary hover:bg-blue-vivid text-xs h-8 px-3.5 rounded-lg mt-1">
+                  <Save className="mr-1.5 h-3.5 w-3.5" />
+                  {updatePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Danger Zone */}
+            <div className="rounded-xl glass p-3.5 sm:p-4 border border-error/20 bg-error/[0.01]">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center border border-error/20">
+                  <AlertTriangle className="h-4 w-4 text-error" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-sm font-semibold text-error">Danger Zone</h3>
+                  <p className="text-[10px] text-text-secondary">Irreversible account teardown</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-text-secondary mb-3.5 leading-relaxed">
+                Once you delete your account, there is no going back. Please be certain.
+              </p>
+              <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleteAccountMutation.isPending} size="sm" className="h-8 text-xs px-4 bg-error hover:bg-error/90 text-white rounded-lg flex items-center gap-1.5">
+                <Trash2 className="h-3.5 w-3.5" />
+                {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
+              </Button>
+            </div>
+          </div>
+        </FadeIn>
       )}
 
       {/* Notifications Tab */}
       {activeTab === 'notifications' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notification Preferences
-            </CardTitle>
-            <CardDescription>
-              Choose which notifications you want to receive
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <p className="font-medium">Email Notifications</p>
-                  <p className="text-sm text-text-secondary">Receive notifications via email</p>
-                </div>
-                <Switch
-                  checked={notifications.email}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, email: checked })}
-                />
+        <FadeIn delay={200}>
+          <div className="rounded-xl glass p-3.5 sm:p-4 border border-border-subtle">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-warning/20 to-warning/5 flex items-center justify-center border border-border-subtle">
+                <Bell className="h-4 w-4 text-warning" />
               </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <p className="font-medium">Deployment Notifications</p>
-                  <p className="text-sm text-text-secondary">Get notified about deployment status</p>
-                </div>
-                <Switch
-                  checked={notifications.deploy}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, deploy: checked })}
-                />
+              <div>
+                <h2 className="font-heading text-sm font-semibold text-text-primary">Notification Preferences</h2>
+                <p className="text-[10px] text-text-secondary">Choose what notifications you receive</p>
               </div>
+            </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <p className="font-medium">Billing Notifications</p>
-                  <p className="text-sm text-text-secondary">Receive billing and payment reminders</p>
+            <div className="space-y-2.5 max-w-lg">
+              {[
+                { key: 'email' as const, title: 'Email Notifications', desc: 'Receive notifications via email' },
+                { key: 'deploy' as const, title: 'Deployment Notifications', desc: 'Get notified about deployment status' },
+                { key: 'billing' as const, title: 'Billing Notifications', desc: 'Receive billing and payment reminders' },
+                { key: 'security' as const, title: 'Security Notifications', desc: 'Get alerts about security events' },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between p-2.5 rounded-lg border border-border-subtle hover:bg-bg-card/30 transition-colors">
+                  <div>
+                    <p className="font-semibold text-xs text-text-primary">{item.title}</p>
+                    <p className="text-[10px] text-text-muted mt-0.5">{item.desc}</p>
+                  </div>
+                  <Switch
+                    checked={notifications[item.key]}
+                    onCheckedChange={(checked) => setNotifications({ ...notifications, [item.key]: checked })}
+                  />
                 </div>
-                <Switch
-                  checked={notifications.billing}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, billing: checked })}
-                />
-              </div>
+              ))}
 
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <p className="font-medium">Security Notifications</p>
-                  <p className="text-sm text-text-secondary">Get alerts about security events</p>
-                </div>
-                <Switch
-                  checked={notifications.security}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, security: checked })}
-                />
-              </div>
-
-              <Button
-                onClick={handleNotificationsSave}
-                disabled={updateNotificationsMutation.isPending}
-                className="w-full sm:w-auto"
-              >
-                <Save className="mr-2 h-4 w-4" />
+              <Button onClick={handleNotificationsSave} disabled={updateNotificationsMutation.isPending} size="sm" className="bg-blue-primary hover:bg-blue-vivid text-xs h-8 px-3.5 rounded-lg mt-1.5">
+                <Save className="mr-1.5 h-3.5 w-3.5" />
                 {updateNotificationsMutation.isPending ? 'Saving...' : 'Save Preferences'}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </FadeIn>
       )}
     </div>
   );

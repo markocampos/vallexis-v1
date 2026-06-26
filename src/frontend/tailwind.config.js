@@ -55,6 +55,10 @@ export default {
           vivid: 'var(--blue-vivid)',
           glow: 'var(--blue-glow)',
         },
+        purple: {
+          primary: 'var(--purple-primary)',
+          glow: 'var(--purple-glow)',
+        },
         success: 'var(--success)',
         warning: 'var(--warning)',
         error: 'var(--error)',

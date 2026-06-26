@@ -1,5 +1,6 @@
 # CONTRIBUTING.md — Contribution Guide
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 Thank you for your interest in contributing to Vallexis. This guide covers everything you need to get your development environment running and submit a quality pull request.

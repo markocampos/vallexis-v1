@@ -16,16 +16,18 @@ const (
 	MaxNameLength = 128
 
 	PlanFree       = "free"
+	PlanStarter    = "starter"
 	PlanPro        = "pro"
 	PlanEnterprise = "enterprise"
 
-	StorageLimitFree       int64 = 2 * 1024 * 1024 * 1024  // 2 GB
-	StorageLimitPro        int64 = 5 * 1024 * 1024 * 1024  // 5 GB per project, 2 projects = 10 GB
-	StorageLimitEnterprise int64 = 50 * 1024 * 1024 * 1024 // 50 GB
+	StorageLimitFree       int64 = 2 * 1024 * 1024 * 1024   // 2 GB
+	StorageLimitStarter    int64 = 5 * 1024 * 1024 * 1024   // 5 GB
+	StorageLimitPro        int64 = 20 * 1024 * 1024 * 1024  // 10 GB per project, 2 projects = 20 GB
+	StorageLimitEnterprise int64 = 50 * 1024 * 1024 * 1024  // 50 GB
 )
 
 var validPlans = map[string]bool{
-	PlanFree: true, PlanPro: true, PlanEnterprise: true,
+	PlanFree: true, PlanStarter: true, PlanPro: true, PlanEnterprise: true,
 }
 
 func ValidatePlan(plan string) error {
@@ -39,6 +41,8 @@ func StorageLimit(plan string) (int64, error) {
 	switch plan {
 	case PlanFree:
 		return StorageLimitFree, nil
+	case PlanStarter:
+		return StorageLimitStarter, nil
 	case PlanPro:
 		return StorageLimitPro, nil
 	case PlanEnterprise:

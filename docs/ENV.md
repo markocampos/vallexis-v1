@@ -1,5 +1,6 @@
 # ENV.md — Environment Variable Reference
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 This document is the authoritative reference for every environment variable used by Vallexis services. Copy `.env.example` at the root of the repo and fill in the values described here.

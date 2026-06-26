@@ -27,12 +27,17 @@ dev-seo: ## Start seo-service only
 
 # --- Database ---
 
+PG_CONTAINER := $(shell docker ps --filter name=postgres --format "{{.Names}}" | head -n 1)
+ifeq ($(PG_CONTAINER),)
+  PG_CONTAINER := vallexis-postgres-1
+endif
+
 migrate: ## Apply pending migrations
 	@echo "Applying migrations..."
 	@if ! ls migrations/*.sql 1>/dev/null 2>&1; then echo "No migration files found in migrations/"; exit 1; fi
 	@fail=0; for f in migrations/*.sql; do \
 		echo "Applying $$f ..."; \
-		if ! docker exec -i vallexis-postgres psql -U $${POSTGRES_USER:-vallexis} -d $${POSTGRES_DB:-vallexis_db} -f /dev/stdin < "$$f"; then \
+		if ! docker exec -i $(PG_CONTAINER) psql -U $${POSTGRES_USER:-vallexis} -d $${POSTGRES_DB:-vallexis_db} -f /dev/stdin < "$$f"; then \
 			echo "Error: Migration $$f failed" >&2; fail=1; break; \
 		fi; \
 	done; if [ "$$fail" -eq 1 ]; then exit 1; fi
@@ -53,7 +58,7 @@ migrate-down: ## Roll back last migration
 seed: ## Seed development data
 	@echo "Seeding development data..."
 	@if [ ! -f scripts/seed.sql ]; then echo "Error: scripts/seed.sql not found" >&2; exit 1; fi
-	@if ! docker exec -i vallexis-postgres psql -U $${POSTGRES_USER:-vallexis} -d $${POSTGRES_DB:-vallexis_db} < scripts/seed.sql; then \
+	@if ! docker exec -i $(PG_CONTAINER) psql -U $${POSTGRES_USER:-vallexis} -d $${POSTGRES_DB:-vallexis_db} < scripts/seed.sql; then \
 		echo "Error: Seeding failed" >&2; exit 1; \
 	fi
 	@echo "Seed complete."
@@ -61,10 +66,10 @@ seed: ## Seed development data
 reset-db: ## Drop and recreate the database (destructive!)
 	@read -p "Are you sure? This will DELETE all data. [y/N] " confirm; \
 	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
-		if ! docker exec vallexis-postgres psql -U $${POSTGRES_USER:-vallexis} -c "DROP DATABASE IF EXISTS $${POSTGRES_DB:-vallexis_db};"; then \
+		if ! docker exec $(PG_CONTAINER) psql -U $${POSTGRES_USER:-vallexis} -c "DROP DATABASE IF EXISTS $${POSTGRES_DB:-vallexis_db};"; then \
 			echo "Error: Failed to drop database" >&2; exit 1; \
 		fi; \
-		if ! docker exec vallexis-postgres psql -U $${POSTGRES_USER:-vallexis} -c "CREATE DATABASE $${POSTGRES_DB:-vallexis_db};"; then \
+		if ! docker exec $(PG_CONTAINER) psql -U $${POSTGRES_USER:-vallexis} -c "CREATE DATABASE $${POSTGRES_DB:-vallexis_db};"; then \
 			echo "Error: Failed to create database" >&2; exit 1; \
 		fi; \
 		echo "Database reset complete."; \

@@ -1,5 +1,6 @@
 # API-VERSIONING.md — API Versioning Strategy
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 This document defines how the Vallexis API is versioned, how breaking changes are managed, and how clients are notified of deprecations.

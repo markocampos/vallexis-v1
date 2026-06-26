@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  CreditCard, 
-  HardDrive, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  CreditCard,
+  HardDrive,
   Search,
   Settings,
-  Zap
+  Sliders
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -15,18 +15,29 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
-  { name: 'Deploys', href: '/dashboard/deploys', icon: Zap },
-  { name: 'Storage', href: '/dashboard/storage', icon: HardDrive },
-  { name: 'SEO Audit', href: '/dashboard/seo', icon: Search },
-  { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-];
-
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const location = useLocation();
+
+  const match = location.pathname.match(/\/dashboard\/deploys\/([^/]+)/);
+  const currentProjectId = match ? match[1] : null;
+
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, hideOnMobile: true },
+    { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban, hideOnMobile: true },
+    { name: 'Storage', href: '/dashboard/storage', icon: HardDrive, hideOnMobile: true },
+    { name: 'SEO Audit', href: '/dashboard/seo', icon: Search, hideOnMobile: false },
+    { name: 'Billing', href: '/dashboard/billing', icon: CreditCard, hideOnMobile: true },
+    { name: 'Profile Settings', href: '/dashboard/settings', icon: Settings, hideOnMobile: true },
+  ];
+
+  if (currentProjectId) {
+    navigation.push({
+      name: 'Project Settings',
+      href: `/dashboard/deploys/${currentProjectId}?tab=settings`,
+      icon: Sliders,
+      hideOnMobile: false
+    });
+  }
 
   return (
     <>
@@ -41,27 +52,37 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 border-r border-border-subtle bg-bg-surface transition-transform duration-200 md:translate-x-0',
+          'fixed left-0 top-0 z-50 h-screen w-64 glass border-r border-border-subtle transition-transform duration-300 ease-out md:translate-x-0 md:top-16 md:h-[calc(100vh-4rem)] md:z-30',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <nav className="flex h-full flex-col px-3 py-4">
+        <nav className="flex h-full flex-col px-3 py-4 justify-between">
           <div className="space-y-1">
             {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
+              const isActive = location.pathname === item.href ||
+                (item.href !== '/dashboard' && location.pathname.startsWith(item.href) && !item.href.includes('tab=settings'));
+              
+              // Handle special active check for Project Settings tab query param
+              const isProjectSettingsActive = item.name === 'Project Settings' && location.search.includes('tab=settings');
+              const isItemActive = item.name === 'Project Settings' ? isProjectSettingsActive : (isActive && !location.search.includes('tab=settings'));
+
               return (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={onClose}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-blue-primary/15 text-blue-primary'
-                      : 'text-text-secondary hover:bg-bg-card hover:text-text-primary'
+                    'relative items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                    item.hideOnMobile ? 'hidden md:flex' : 'flex',
+                    isItemActive
+                      ? 'text-text-primary bg-bg-card'
+                      : 'text-text-secondary hover:bg-bg-card/50 hover:text-text-primary'
                   )}
                 >
-                  <item.icon className="h-4 w-4" />
+                  {isItemActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-gradient-to-b from-blue-primary to-purple-primary rounded-r" />
+                  )}
+                  <item.icon className={cn('h-4 w-4', isItemActive && 'text-blue-primary')} />
                   {item.name}
                 </Link>
               );

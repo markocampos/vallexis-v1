@@ -1,5 +1,6 @@
 # INFRASTRUCTURE.md — Infrastructure Provisioning Guide
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 Step-by-step guide for provisioning the infrastructure that Vallexis runs on. This covers the initial setup from a bare OCI account to a running production environment.

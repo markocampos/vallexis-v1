@@ -1,7 +1,7 @@
 # ROADMAP.md — Development Roadmap
 
 > **Last Updated:** June 23, 2026
-> **Current Version:** 0.2.0
+> **Current Version:** 0.1.0
 > **Next Milestone:** Q3 2026 — Foundation
 
 ---
@@ -18,7 +18,7 @@
 
 ---
 
-## Shipped — v0.1.0 & v0.2.0
+## Shipped — v0.1.0
 
 - ✅ Auth — JWT RS256 + OAuth (GitHub, Google)
 - ✅ Projects — create, deploy, custom subdomain (`.vallexis.io`), wildcard SSL

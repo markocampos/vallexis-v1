@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const API_URL = import.meta.env.DEV ? '/api/v1' : (import.meta.env.VITE_API_URL || '/api/v1');
 
 class ApiClient {
   private baseUrl: string;
@@ -34,7 +34,18 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errBody = await response.json();
+        if (errBody && errBody.error) {
+          errorMessage = errBody.error;
+        } else if (errBody && Array.isArray(errBody.errors)) {
+          errorMessage = errBody.errors.join(', ');
+        }
+      } catch {
+        // Not a JSON response or parsing failed, fallback to default status error
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -62,8 +73,35 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
-  async json<T>(): Promise<T> {
-    return this as unknown as T;
+  async upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    const url = `${this.baseUrl}/${endpoint}`;
+    const headers: Record<string, string> = {};
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errBody = await response.json();
+        if (errBody && errBody.error) {
+          errorMessage = errBody.error;
+        } else if (errBody && Array.isArray(errBody.errors)) {
+          errorMessage = errBody.errors.join(', ');
+        }
+      } catch {
+        // Not a JSON response
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
   }
 }
 

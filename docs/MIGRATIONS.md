@@ -1,5 +1,6 @@
 # MIGRATIONS.md — Database Migration Guide
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 This guide covers writing, testing, and deploying database migrations for Vallexis.

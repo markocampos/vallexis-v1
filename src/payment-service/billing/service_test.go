@@ -134,7 +134,7 @@ func TestFormatAmount(t *testing.T) {
 		currency string
 		want     string
 	}{
-		{24900, CurrencyPHP, "₱249.00"},
+		{49900, CurrencyPHP, "₱499.00"},
 		{100, CurrencyUSD, "$1.00"},
 		{9999, CurrencyPHP, "₱99.99"},
 		{0, CurrencyUSD, "$0.00"},

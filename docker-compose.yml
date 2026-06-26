@@ -46,6 +46,8 @@ services:
       - "3000:3000"
     environment:
       - API_PORT=3000
+    volumes:
+      - ./secrets:/app/secrets:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,6 +56,8 @@ services:
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
       <<: *healthcheck-defaults
+    networks:
+      - default
 
   deploy-service:
     <<: *backend-service
@@ -107,9 +111,11 @@ services:
       context: ./src/frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "5173:80"
     depends_on:
       - api-gateway
+    networks:
+      - default
     restart: unless-stopped
 
   # --- Infrastructure ---
@@ -188,6 +194,8 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
     restart: unless-stopped
+    networks:
+      - default
 
 volumes:
   caddy_data:
@@ -197,3 +205,6 @@ volumes:
   minio_data:
   prometheus_data:
   grafana_data:
+
+networks:
+  default:

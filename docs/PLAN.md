@@ -1,5 +1,6 @@
 # PLAN.md — Vallexis Project Plan
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 > **Status:** Active — Phase 1 (Foundation)
 
@@ -171,5 +172,5 @@ Vallexis is **not** targeting:
 | Plan | Price | Projects | Storage | Deploys/hr |
 |---|---|---|---|---|
 | **Free** | $0/mo | 1 | 2 GB | 5 |
-| **Pro** | ₱249/mo (~$4) | 2 | 10 GB (5 GB × 2 projects) | 20 |
+| **Pro** | ₱499/mo (~$8) | 2 | 10 GB (5 GB × 2 projects) | 20 |
 | **Enterprise** | Custom | Unlimited | Custom | 100 |

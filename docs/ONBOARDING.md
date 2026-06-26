@@ -1,5 +1,6 @@
 # ONBOARDING.md — Developer Onboarding Guide
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 > **Time to complete:** ~30 minutes for a first-time setup
 
@@ -244,7 +245,7 @@ Run through this checklist to confirm your environment is healthy:
 
 ```bash
 # All backend services
-curl -s http://localhost:3000/api/health | jq .   # {"status":"ok","version":"0.2.0"}
+curl -s http://localhost:3000/api/health | jq .   # {"status":"ok","version":"0.1.0"}
 curl -s http://localhost:3001/health | jq .
 curl -s http://localhost:3002/health | jq .
 curl -s http://localhost:3003/health | jq .

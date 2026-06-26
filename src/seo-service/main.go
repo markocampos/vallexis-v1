@@ -16,7 +16,7 @@ import (
 func main() {
 	cfg := config.Load()
 
-	r := httpx.NewRouter()
+	r := httpx.NewRouter(cfg.CORSAllowedOrigins)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteJSON(w, http.StatusOK, map[string]string{
 			"status":  "ok",

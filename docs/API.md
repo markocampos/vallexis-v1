@@ -1,6 +1,6 @@
 # API.md — Vallexis REST API Reference
 
-> **Version:** v1
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 > **Base URL (Production):** `https://api.vallexis.io/v1`
 > **Base URL (Staging):** `https://api.staging.vallexis.io/v1`
@@ -544,7 +544,7 @@ Roll back to this deploy version.
 {
   "plan": "pro",
   "status": "active",
-  "amount_cents": 24900,
+  "amount_cents": 49900,
   "currency": "php",
   "interval": "monthly",
   "current_period_start": "2026-06-20T10:00:00Z",
@@ -609,7 +609,7 @@ Schedule subscription cancellation at the end of the current billing period.
   "invoices": [
     {
       "id": "inv_abc123",
-      "amount_cents": 24900,
+      "amount_cents": 49900,
       "currency": "php",
       "status": "paid",
       "pdf_url": "https://api.paymongo.com/v1/payments/pay_xxx/receipt",

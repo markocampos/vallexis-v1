@@ -7,17 +7,23 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/toaster';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Globe, Eye, EyeOff } from 'lucide-react';
+import { FadeIn } from '@/components/ui/animated';
+import { BackgroundPattern } from '@/components/ui/background-pattern';
+import { Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
+import { FaGithub, FaGoogle } from 'react-icons/fa';
 import { InlineLoader } from '@/components/ui/loading-spinner';
-
-// ─── Schema ───────────────────────────────────────────────────────────────────
 
 const registerSchema = z
   .object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Please enter a valid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: z
+      .string()
+      .min(12, 'Password must be at least 12 characters')
+      .regex(/[A-Z]/, 'Password must include an uppercase letter')
+      .regex(/[a-z]/, 'Password must include a lowercase letter')
+      .regex(/[0-9]/, 'Password must include a number')
+      .regex(/[^A-Za-z0-9]/, 'Password must include a special character'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -27,7 +33,12 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const benefits = [
+  'Free tier with 1 project',
+  'No credit card required',
+  'Deploy in under 60 seconds',
+  'Automatic SSL certificates',
+];
 
 export function Register() {
   const [showPassword, setShowPassword] = useState(false);
@@ -48,8 +59,8 @@ export function Register() {
     try {
       await authRegister(data.email, data.password, data.name);
       navigate('/dashboard');
-    } catch {
-      toastError('Registration failed', 'Failed to create account. Please try again.');
+    } catch (err: any) {
+      toastError('Registration failed', err.message || 'Failed to create account. Please try again.');
     }
   };
 
@@ -58,32 +69,72 @@ export function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="font-heading text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Get started with Vallexis today</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+    <div className="min-h-screen flex">
+      {/* Left side - Brand */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <BackgroundPattern />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-primary/20 via-blue-primary/10 to-transparent" />
+
+        <div className="relative z-10 flex flex-col justify-center px-16">
+          <FadeIn>
+            <div className="font-heading text-3xl font-bold gradient-text mb-8">Vallexis</div>
+          </FadeIn>
+          <FadeIn delay={100}>
+            <h1 className="font-heading text-4xl font-bold mb-4">
+              Start building today
+            </h1>
+          </FadeIn>
+          <FadeIn delay={200}>
+            <p className="text-text-secondary text-lg leading-relaxed max-w-md mb-8">
+              Join thousands of developers shipping faster with Vallexis.
+            </p>
+          </FadeIn>
+          <FadeIn delay={300}>
+            <ul className="space-y-3">
+              {benefits.map((b) => (
+                <li key={b} className="flex items-center gap-3 text-text-secondary">
+                  <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
+                    <Check className="h-3 w-3 text-success" />
+                  </div>
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </FadeIn>
+        </div>
+      </div>
+
+      {/* Right side - Form */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <FadeIn className="w-full max-w-md">
+          <div className="lg:hidden font-heading text-xl sm:text-2xl font-bold gradient-text mb-6 sm:mb-8 text-center">Vallexis</div>
+
+          <div className="space-y-4 sm:space-y-6">
+            <div>
+              <h2 className="font-heading text-xl sm:text-2xl font-bold mb-2">Create your account</h2>
+              <p className="text-text-secondary">
+                Get started with Vallexis in seconds
+              </p>
+            </div>
+
             {/* OAuth Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
                 onClick={() => handleOAuth('github')}
-                className="w-full"
+                className="h-11 glass"
                 type="button"
               >
-                <Globe className="mr-2 h-4 w-4" />
+                <FaGithub className="mr-2 h-4 w-4" />
                 GitHub
               </Button>
               <Button
                 variant="outline"
                 onClick={() => handleOAuth('google')}
-                className="w-full"
+                className="h-11 glass"
                 type="button"
               >
-                <Globe className="mr-2 h-4 w-4" />
+                <FaGoogle className="mr-2 h-4 w-4" />
                 Google
               </Button>
             </div>
@@ -94,62 +145,47 @@ export function Register() {
                 <span className="w-full border-t border-border-subtle" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-bg-surface px-2 text-text-muted">Or continue with</span>
+                <span className="bg-bg-deep px-3 text-text-muted">Or continue with</span>
               </div>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-              {/* Name */}
-              <div className="space-y-1">
-                <label htmlFor="name" className="text-sm font-medium">
-                  Name
-                </label>
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-medium">Name</label>
                 <Input
                   id="name"
                   type="text"
                   placeholder="John Doe"
                   aria-invalid={!!errors.name}
+                  className="h-11"
                   {...register('name')}
                 />
-                {errors.name && (
-                  <p role="alert" className="text-xs text-error mt-1">
-                    {errors.name.message}
-                  </p>
-                )}
+                {errors.name && <p role="alert" className="text-xs text-error">{errors.name.message}</p>}
               </div>
 
-              {/* Email */}
-              <div className="space-y-1">
-                <label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </label>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">Email</label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   aria-invalid={!!errors.email}
+                  className="h-11"
                   {...register('email')}
                 />
-                {errors.email && (
-                  <p role="alert" className="text-xs text-error mt-1">
-                    {errors.email.message}
-                  </p>
-                )}
+                {errors.email && <p role="alert" className="text-xs text-error">{errors.email.message}</p>}
               </div>
 
-              {/* Password */}
-              <div className="space-y-1">
-                <label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </label>
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-sm font-medium">Password</label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     aria-invalid={!!errors.password}
-                    className="pr-10"
+                    className="h-11 pr-10"
                     {...register('password')}
                   />
                   <button
@@ -161,25 +197,18 @@ export function Register() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {errors.password && (
-                  <p role="alert" className="text-xs text-error mt-1">
-                    {errors.password.message}
-                  </p>
-                )}
+                {errors.password && <p role="alert" className="text-xs text-error">{errors.password.message}</p>}
               </div>
 
-              {/* Confirm Password */}
-              <div className="space-y-1">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm Password
-                </label>
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirm ? 'text' : 'password'}
                     placeholder="••••••••"
                     aria-invalid={!!errors.confirmPassword}
-                    className="pr-10"
+                    className="h-11 pr-10"
                     {...register('confirmPassword')}
                   />
                   <button
@@ -191,18 +220,13 @@ export function Register() {
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {errors.confirmPassword && (
-                  <p role="alert" className="text-xs text-error mt-1">
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
+                {errors.confirmPassword && <p role="alert" className="text-xs text-error">{errors.confirmPassword.message}</p>}
               </div>
 
-              {/* Submit */}
               <Button
                 id="register-submit-btn"
                 type="submit"
-                className="w-full"
+                className="w-full h-11 bg-blue-primary hover:bg-blue-vivid"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -211,20 +235,23 @@ export function Register() {
                     Creating account...
                   </span>
                 ) : (
-                  'Create account'
+                  <span className="flex items-center gap-2">
+                    Create account
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
                 )}
               </Button>
             </form>
 
-            <div className="text-center text-sm text-text-secondary">
+            <p className="text-center text-sm text-text-secondary">
               Already have an account?{' '}
-              <Link to="/login" className="text-blue-primary hover:underline">
+              <Link to="/login" className="text-blue-primary hover:underline font-medium">
                 Sign in
               </Link>
-            </div>
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </FadeIn>
+      </div>
     </div>
   );
 }

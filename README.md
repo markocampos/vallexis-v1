@@ -43,7 +43,7 @@ Vallexis replaces the fragmented stack of hosting providers, payment dashboards,
 
 ## Features
 
-| Feature | Free | Pro (₱249/mo ~$4) |
+| Feature | Free | Pro (₱499/mo ~$8) |
 |---|---|---|
 | Projects | 1 | 2 |
 | One-click Git deploy | ✅ | ✅ |
@@ -95,7 +95,7 @@ docker compose up -d
 
 ```bash
 curl http://localhost:3000/api/health | jq .
-# {"status":"ok","version":"0.2.0"}
+# {"status":"ok","version":"0.1.0"}
 ```
 
 ### 4. Open the dashboard

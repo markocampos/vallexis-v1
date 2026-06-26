@@ -1,5 +1,8 @@
 # CHANGELOG.md — Version History
 
+> **Version:** 0.1.0
+> **Last Updated:** June 23, 2026
+
 All notable changes to Vallexis are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
@@ -32,13 +35,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - **OAuth:** GitHub and Google sign-in (email + profile scopes)
 - **Projects:** create, list, view, delete; subdomain auto-assigned; Git repo + branch configuration
 - **Deploy pipeline:** GitHub webhook → clone → `docker build` → `docker run` → health check; deploy history with status tracking
-- **Payments:** PayMongo integration; monthly subscription plan (₱249/mo Pro); webhook handler for `payment.paid`, `subscription.updated`, `subscription.cancelled`; billing portal redirect
+- **Payments:** PayMongo integration; monthly subscription plan (₱499/mo Pro); webhook handler for `payment.paid`, `subscription.updated`, `subscription.cancelled`; billing portal redirect
 - **PostgreSQL 16** as primary database with `pgxpool` connection pooling
 - **Redis 7.x** for session storage, rate-limit counters, and job queuing
-- **Nginx** as reverse proxy (later replaced by Caddy in v0.2.0)
+- **Nginx** as reverse proxy (later replaced by Caddy in v0.1.0)
 - **Docker Compose** deployment with named volumes, health checks, and auto-restart policies
 - **Daily automated backups:** `pg_dump` compressed + rsync to OCI Object Storage; 7-day retention
-- **Let's Encrypt SSL** via Certbot (later replaced by Caddy auto-renewal in v0.2.0)
+- **Let's Encrypt SSL** via Certbot (later replaced by Caddy auto-renewal in v0.1.0)
 - **Uptime monitoring:** internal HTTP health checks every 60 seconds; email alert after 3 consecutive failures
 - **CI/CD pipeline:** GitHub Actions — test-runner on PR open/update; deploy-bot on push to `main`
 - **Admin dashboard:** user list, project list, system health at a glance

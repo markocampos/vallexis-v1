@@ -1,6 +1,6 @@
 # Vallexis Design System
 
-> **Version:** 1.1.0  
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026  
 > **Maintainer:** Vallexis Design Team  
 > **Status:** Production Ready
@@ -588,7 +588,7 @@ All brand colours (`--blue-primary`, `--blue-vivid`, `--blue-glow`) and semantic
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.1.0 | 2026-06-23 | Added Motion & Animation tokens, Dark/Light Mode section, Tooltip + Modal components, border tokens, `--bg-surface`, `--bg-overlay`, `--text-muted` |
+| 0.1.0 | 2026-06-23 | Added Motion & Animation tokens, Dark/Light Mode section, Tooltip + Modal components, border tokens, `--bg-surface`, `--bg-overlay`, `--text-muted` |
 | 1.0.0 | 2026-06-22 | Initial release — color system, typography, core components |
 
 ---

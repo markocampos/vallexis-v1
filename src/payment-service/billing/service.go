@@ -34,8 +34,8 @@ const (
 	CurrencyPHP = "php"
 	CurrencyUSD = "usd"
 
-	ProMonthlyCents        = 24900  // ₱249
-	ProYearlyCents         = 249000 // ₱2,490 (2 months free)
+	ProMonthlyCents        = 49900  // ₱499
+	ProYearlyCents         = 499000 // ₱4,990 (2 months free)
 	EnterpriseMonthlyCents = 99900
 	EnterpriseYearlyCents  = 999000
 )

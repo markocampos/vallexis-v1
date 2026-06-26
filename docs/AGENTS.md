@@ -1,5 +1,6 @@
 # AGENTS.md — Automated Systems & Background Agents
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 All agents run as Docker-managed processes or cron jobs on the OCI A1 instance.

@@ -1,5 +1,6 @@
 # DECISIONS.md — Architecture Decision Records
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 Architecture Decision Records (ADRs) document the significant technical choices made in Vallexis, including the context and reasoning behind them. This helps future contributors understand *why* things are the way they are — not just how.
@@ -221,7 +222,7 @@ Replace Nginx with **Caddy**.
 
 #### Migration
 
-Nginx was replaced in v0.2.0. All Nginx config was migrated to `Caddyfile` with equivalent routing and security headers.
+Nginx was replaced in v0.1.0. All Nginx config was migrated to `Caddyfile` with equivalent routing and security headers.
 
 ---
 
@@ -286,7 +287,7 @@ We needed a payment processor. The primary market for Vallexis is the Philippine
 **Key reasons:**
 - **GCash and Maya** are the dominant payment methods in the Philippines — not supporting them would exclude the majority of our target users.
 - **PayMongo is BSP-licensed** — compliant with Bangko Sentral ng Pilipinas regulations for electronic money and payment facilitation.
-- **Native PHP (Philippine Peso) support** — pricing in ₱249/mo is straightforward without currency conversion friction for local users.
+- **Native PHP (Philippine Peso) support** — pricing in ₱499/mo is straightforward without currency conversion friction for local users.
 - **Payment links model** — PayMongo's hosted payment page means card data never touches our servers (SAQ-A PCI scope, same as Stripe Checkout).
 
 #### Consequences
@@ -294,7 +295,7 @@ We needed a payment processor. The primary market for Vallexis is the Philippine
 - PayMongo does not have an official Go SDK — we use their REST API directly with a thin internal wrapper (`paymongo-go`).
 - Users outside the Philippines may not have GCash/Maya but can still pay via credit/debit card through PayMongo.
 - PayPal planned for Q4 2026 for international users who prefer it.
-- Transaction fee (~3.5%) is accounted for in the ₱249/mo pricing.
+- Transaction fee (~3.5%) is accounted for in the ₱499/mo pricing.
 
 #### Review Trigger
 

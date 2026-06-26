@@ -77,13 +77,13 @@ describe('Login Page', () => {
     fireEvent.click(screen.getByText('Sign in'));
 
     await waitFor(() => {
-      expect(screen.getByText('Password must be at least 8 characters')).toBeInTheDocument();
+      expect(screen.getByText('Password must be at least 12 characters')).toBeInTheDocument();
     });
   });
 
   it('has a link to register page', () => {
     render(<Login />);
-    expect(screen.getByText('Sign up')).toBeInTheDocument();
+    expect(screen.getByText(/Sign up/)).toBeInTheDocument();
   });
 
   it('renders show/hide password toggle', () => {

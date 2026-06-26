@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, CreditCard, Database } from 'lucide-react';
+import { useToast } from '@/components/ui/toaster';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { PLANS } from '@/lib/config';
+import { Check, CreditCard, Database, ArrowRight } from 'lucide-react';
 
 interface Subscription {
   id: string;
-  plan: 'free' | 'pro' | 'enterprise';
-  status: 'active' | 'canceled' | 'past_due';
+  plan: 'free' | 'starter' | 'pro';
+  status: 'active' | 'canceled' | 'past_due' | 'trialing';
   current_period_end: string;
   cancel_at_period_end: boolean;
 }
@@ -22,63 +25,6 @@ interface Usage {
   bandwidth: number;
   bandwidth_limit: number;
 }
-
-interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  interval: 'monthly' | 'yearly';
-  features: string[];
-  popular?: boolean;
-}
-
-const PLANS: Plan[] = [
-  {
-    id: 'free',
-    name: 'Free',
-    price: 0,
-    interval: 'monthly',
-    features: [
-      '3 Projects',
-      '1 GB Storage',
-      '10 GB Bandwidth',
-      'Community Support',
-      'Basic Deployments',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 29,
-    interval: 'monthly',
-    popular: true,
-    features: [
-      'Unlimited Projects',
-      '50 GB Storage',
-      '500 GB Bandwidth',
-      'Priority Support',
-      'Custom Domains',
-      'SSL Certificates',
-      'Advanced Analytics',
-    ],
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 99,
-    interval: 'monthly',
-    features: [
-      'Unlimited Everything',
-      '1 TB Storage',
-      'Unlimited Bandwidth',
-      '24/7 Dedicated Support',
-      'Custom Integrations',
-      'SLA Guarantee',
-      'Advanced Security',
-      'Team Management',
-    ],
-  },
-];
 
 export function Billing() {
   const queryClient = useQueryClient();
@@ -95,10 +41,16 @@ export function Billing() {
     queryFn: () => api.get<Usage>('billing/usage'),
   });
 
+  const { toast } = useToast();
+
   const upgradeMutation = useMutation({
-    mutationFn: (planId: string) => api.post('billing/subscribe', { plan_id: planId }),
+    mutationFn: (planId: string) => api.post('billing/checkout', { plan: planId, interval: billingCycle }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      setSelectedPlan(null);
+    },
+    onError: () => {
+      toast({ title: 'Upgrade failed', description: 'Please try again or contact support.', variant: 'error' });
       setSelectedPlan(null);
     },
   });
@@ -108,17 +60,20 @@ export function Billing() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
     },
+    onError: () => {
+      toast({ title: 'Cancellation failed', description: 'Please try again.', variant: 'error' });
+    },
   });
 
   const getUsagePercentage = (used: number, limit: number) => {
-    if (limit === 0) return 0;
+    if (limit <= 0) return 0;
     return Math.min((used / limit) * 100, 100);
   };
 
   const getUsageColor = (percentage: number) => {
-    if (percentage >= 90) return 'text-error';
-    if (percentage >= 70) return 'text-warning';
-    return 'text-success';
+    if (percentage >= 90) return 'from-error to-error';
+    if (percentage >= 70) return 'from-warning to-warning';
+    return 'from-blue-primary to-purple-primary';
   };
 
   const handleUpgrade = (planId: string) => {
@@ -135,211 +90,209 @@ export function Billing() {
   if (subscriptionLoading || usageLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-text-muted">Loading billing information...</div>
+        <LoadingSpinner size="md" text="Loading billing information..." />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-3xl font-bold text-text-primary mb-2">
-          Billing & Subscription
-        </h1>
-        <p className="text-text-secondary">
-          Manage your subscription and view usage
-        </p>
-      </div>
+    <div className="space-y-3 sm:space-y-4 font-body">
+      <FadeIn>
+        <div className="border-b border-border-subtle pb-3">
+          <h1 className="font-heading text-lg sm:text-xl font-bold mb-1">
+            Billing & Subscription
+          </h1>
+          <p className="text-xs text-text-secondary">
+            Manage your subscription and view usage
+          </p>
+        </div>
+      </FadeIn>
 
       {/* Current Plan */}
       {subscription && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Current Plan
-            </CardTitle>
-            <CardDescription>
-              Your current subscription and billing status
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <FadeIn delay={100}>
+          <div className="rounded-xl glass p-3.5 sm:p-4 border border-border-subtle">
+            <div className="flex items-center gap-2.5 mb-3.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-primary/20 to-purple-primary/20 flex items-center justify-center border border-border-subtle">
+                <CreditCard className="h-4 w-4 text-blue-glow" />
+              </div>
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-2xl font-bold capitalize">{subscription.plan}</h3>
-                  <Badge variant={subscription.status === 'active' ? 'success' : 'destructive'}>
-                    {subscription.status}
-                  </Badge>
-                </div>
-                <p className="text-sm text-text-secondary">
+                <h2 className="font-heading text-sm font-semibold text-text-primary">Current Plan</h2>
+                <p className="text-[10px] text-text-secondary">Your subscription status</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl font-extrabold gradient-text capitalize leading-none">{subscription.plan}</span>
+                <Badge variant={subscription.status === 'active' ? 'success' : 'destructive'} className="text-[9px] px-1.5 py-0">
+                  {subscription.status}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-3.5 text-xs">
+                <p className="text-text-muted text-[11px]">
                   {subscription.cancel_at_period_end
-                    ? `Canceling on ${new Date(subscription.current_period_end).toLocaleDateString()}`
-                    : `Renews on ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                    ? `Cancels ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                    : `Renews ${new Date(subscription.current_period_end).toLocaleDateString()}`
                   }
                 </p>
+                {subscription.plan !== 'free' && !subscription.cancel_at_period_end && (
+                  <Button variant="outline" size="sm" onClick={handleCancel} className="h-7 text-xs px-2.5 rounded-lg border-border-subtle">
+                    Cancel
+                  </Button>
+                )}
               </div>
-              {subscription.plan !== 'free' && !subscription.cancel_at_period_end && (
-                <Button variant="outline" onClick={handleCancel}>
-                  Cancel Subscription
-                </Button>
-              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </FadeIn>
       )}
 
       {/* Usage Overview */}
       {usage && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Usage Overview
-            </CardTitle>
-            <CardDescription>
-              Your current resource usage
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Projects */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Projects</span>
-                  <span className={`text-sm ${getUsageColor(getUsagePercentage(usage.projects, usage.projects_limit))}`}>
-                    {usage.projects} / {usage.projects_limit === 0 ? '∞' : usage.projects_limit}
-                  </span>
-                </div>
-                <div className="h-2 bg-bg-surface rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-primary transition-all"
-                    style={{ width: `${getUsagePercentage(usage.projects, usage.projects_limit)}%` }}
-                  />
-                </div>
+        <FadeIn delay={200}>
+          <div className="rounded-xl glass p-3.5 sm:p-4 border border-border-subtle">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center border border-border-subtle">
+                <Database className="h-4 w-4 text-success" />
               </div>
-
-              {/* Storage */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Storage</span>
-                  <span className={`text-sm ${getUsageColor(getUsagePercentage(usage.storage, usage.storage_limit))}`}>
-                    {(usage.storage / 1024).toFixed(2)} GB / {usage.storage_limit === 0 ? '∞' : `${(usage.storage_limit / 1024).toFixed(0)} GB`}
-                  </span>
-                </div>
-                <div className="h-2 bg-bg-surface rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-primary transition-all"
-                    style={{ width: `${getUsagePercentage(usage.storage, usage.storage_limit)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Bandwidth */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Bandwidth</span>
-                  <span className={`text-sm ${getUsageColor(getUsagePercentage(usage.bandwidth, usage.bandwidth_limit))}`}>
-                    {(usage.bandwidth / 1024).toFixed(2)} GB / {usage.bandwidth_limit === 0 ? '∞' : `${(usage.bandwidth_limit / 1024).toFixed(0)} GB`}
-                  </span>
-                </div>
-                <div className="h-2 bg-bg-surface rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-primary transition-all"
-                    style={{ width: `${getUsagePercentage(usage.bandwidth, usage.bandwidth_limit)}%` }}
-                  />
-                </div>
+                <h2 className="font-heading text-sm font-semibold text-text-primary">Usage</h2>
+                <p className="text-[10px] text-text-secondary">Your current resource consumption</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="space-y-3.5">
+              {[
+                { label: 'Projects', used: usage.projects, limit: usage.projects_limit, unit: '' },
+                { label: 'Storage', used: usage.storage / (1024 * 1024 * 1024), limit: usage.storage_limit / (1024 * 1024 * 1024), unit: 'GB' },
+                { label: 'Bandwidth', used: usage.bandwidth / (1024 * 1024 * 1024), limit: usage.bandwidth_limit / (1024 * 1024 * 1024), unit: 'GB' },
+              ].map((item) => {
+                const pct = getUsagePercentage(item.used, item.limit);
+                return (
+                  <div key={item.label} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-text-primary">{item.label}</span>
+                      <span className="text-text-secondary font-mono text-[11px]">
+                        {item.unit ? `${item.used.toFixed(1)} ${item.unit}` : Math.round(item.used)}
+                        {' / '}
+                        {item.limit <= 0 ? '∞' : item.unit ? `${item.limit.toFixed(0)} ${item.unit}` : item.limit}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-bg-card rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-gradient-to-r ${getUsageColor(pct)} transition-all rounded-full`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </FadeIn>
       )}
 
-      {/* Available Plans */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <h2 className="font-heading text-xl font-bold">Available Plans</h2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={billingCycle === 'monthly' ? 'default' : 'outline'}
-              size="sm"
+      {/* Billing Cycle Toggle */}
+      <FadeIn delay={300}>
+        <div className="flex items-center justify-between border-t border-border-subtle/30 pt-3">
+          <h2 className="font-heading text-sm sm:text-base font-bold text-text-primary">Available Plans</h2>
+          <div className="flex items-center gap-1 p-0.5 rounded-lg glass">
+            <button
               onClick={() => setBillingCycle('monthly')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                billingCycle === 'monthly'
+                  ? 'bg-bg-card text-text-primary border border-border-interactive/20'
+                  : 'text-text-muted hover:text-text-secondary'
+              }`}
             >
               Monthly
-            </Button>
-            <Button
-              variant={billingCycle === 'yearly' ? 'default' : 'outline'}
-              size="sm"
+            </button>
+            <button
               onClick={() => setBillingCycle('yearly')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                billingCycle === 'yearly'
+                  ? 'bg-bg-card text-text-primary border border-border-interactive/20'
+                  : 'text-text-muted hover:text-text-secondary'
+              }`}
             >
-              Yearly <span className="ml-1 text-xs text-success">-20%</span>
-            </Button>
+              Yearly <span className="text-[10px] text-success ml-0.5 font-bold">-20%</span>
+            </button>
           </div>
         </div>
+      </FadeIn>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {PLANS.map((plan) => {
-            const price = billingCycle === 'yearly' ? Math.round(plan.price * 0.8) : plan.price;
-            const isSelected = subscription?.plan === plan.id;
-            const isLoading = upgradeMutation.isPending && selectedPlan === plan.id;
+      {/* Plans Grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {PLANS.map((plan, i) => {
+          const price = billingCycle === 'yearly' ? Math.round(plan.price * 0.8) : plan.price;
+          const isSelected = subscription?.plan === plan.id;
+          const isLoading = upgradeMutation.isPending && selectedPlan === plan.id;
 
-            return (
-              <Card
-                key={plan.id}
-                className={`relative ${plan.popular ? 'border-blue-primary' : ''} ${isSelected ? 'ring-2 ring-blue-primary' : ''}`}
+          return (
+            <FadeIn key={plan.id} delay={300 + i * 100}>
+              <div
+                className={`relative p-3.5 sm:p-4 rounded-xl glass h-full flex flex-col justify-between border border-border-subtle ${
+                  plan.popular ? 'border-blue-primary/40 animate-pulse-glow' : 'card-hover'
+                } ${isSelected ? 'ring-1 ring-blue-primary bg-blue-primary/[0.01]' : ''}`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-blue-primary">Popular</Badge>
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-blue-primary text-white text-[9px] font-bold tracking-wide uppercase">
+                    Most Popular
                   </div>
                 )}
-                <CardHeader>
-                  <CardTitle className="capitalize">{plan.name}</CardTitle>
-                  <CardDescription>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold">${price}</span>
-                      <span className="text-text-muted">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
-                    </div>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm">
-                        <Check className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className="w-full"
-                    variant={isSelected ? 'outline' : 'default'}
-                    disabled={isSelected || isLoading}
-                    onClick={() => handleUpgrade(plan.id)}
-                  >
-                    {isLoading ? 'Processing...' : isSelected ? 'Current Plan' : 'Upgrade'}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* Billing History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-          <CardDescription>
-            Your past invoices and payments
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-text-muted">
-            No billing history yet
-          </div>
-        </CardContent>
-      </Card>
+                <div>
+                  <div className="mb-4">
+                    <h3 className="font-heading text-sm sm:text-base font-bold text-text-primary">{plan.name}</h3>
+                    <div className="flex items-baseline gap-0.5 mt-0.5">
+                      <span className="text-2xl sm:text-3xl font-extrabold font-mono text-text-primary">₱{price}</span>
+                      <span className="text-[10px] text-text-muted">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3.5 mb-5">
+                    {plan.sections.map((section) => (
+                      <div key={section.title}>
+                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-wider mb-1">{section.title}</p>
+                        <ul className="space-y-1">
+                          {section.items.map((item) => (
+                            <li key={item} className="flex items-start gap-1.5 text-xs text-text-secondary">
+                              <Check className="h-3.5 w-3.5 text-success flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Button
+                  className={`w-full h-8 text-xs rounded-lg ${
+                    plan.popular && !isSelected
+                      ? 'bg-blue-primary hover:bg-blue-vivid text-white'
+                      : ''
+                  }`}
+                  variant={isSelected ? 'outline' : plan.popular ? 'default' : 'outline'}
+                  disabled={isSelected || isLoading}
+                  onClick={() => handleUpgrade(plan.id)}
+                  size="sm"
+                >
+                  {isLoading ? (
+                    'Processing...'
+                  ) : isSelected ? (
+                    'Current Plan'
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      Get Started <ArrowRight className="h-3 w-3" />
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </FadeIn>
+          );
+        })}
+      </div>
     </div>
   );
 }

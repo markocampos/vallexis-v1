@@ -3,17 +3,22 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Project } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, GitBranch, ExternalLink, Trash2, Settings } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { QueryErrorState } from '@/components/ui/query-error';
+import { useToast } from '@/components/ui/toaster';
+import { APP_DOMAIN } from '@/lib/config';
+import { Plus, GitBranch, ExternalLink, Trash2, Settings, FolderKanban } from 'lucide-react';
 
 export function Projects() {
   const queryClient = useQueryClient();
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
 
-  const { data: projects, isLoading } = useQuery({
+  const { toast } = useToast();
+
+  const { data: projects, isLoading, isError, refetch } = useQuery({
     queryKey: ['projects'],
     queryFn: () => api.get<Project[]>('projects'),
   });
@@ -24,224 +29,152 @@ export function Projects() {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setDeleteDialog(null);
     },
+    onError: () => {
+      toast({ title: 'Delete failed', description: 'Could not delete the project.', variant: 'error' });
+    },
   });
 
-  const getStatusBadge = (status: Project['status']) => {
+  const getStatusStyle = (status: Project['status']) => {
     switch (status) {
       case 'deployed':
-        return <Badge variant="success">Deployed</Badge>;
+        return 'success';
       case 'building':
-        return <Badge variant="warning">Building</Badge>;
+        return 'warning';
       case 'failed':
-        return <Badge variant="destructive">Failed</Badge>;
+        return 'destructive';
       default:
-        return <Badge variant="secondary">Idle</Badge>;
+        return 'secondary';
     }
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-text-muted">Loading projects...</div>
+        <LoadingSpinner size="md" text="Loading projects..." />
       </div>
     );
   }
 
+  if (isError) {
+    return <QueryErrorState message="Failed to load projects." onRetry={() => refetch()} />;
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-3xl font-bold text-text-primary mb-2">
-            Projects
-          </h1>
-          <p className="text-text-secondary">
-            Manage your deployments and projects
-          </p>
+    <div className="space-y-3 sm:space-y-4 font-body">
+      <FadeIn>
+        <div className="flex items-center justify-between border-b border-border-subtle pb-3">
+          <div>
+            <h1 className="font-heading text-lg sm:text-xl font-bold mb-1">
+              Projects
+            </h1>
+            <p className="text-xs text-text-secondary">
+              Manage your deployments and projects
+            </p>
+          </div>
+          <Button size="sm" asChild className="bg-blue-primary hover:bg-blue-vivid text-white text-xs h-8 px-3 rounded-lg">
+            <Link to="/dashboard/projects/new">
+              <Plus className="mr-1 h-3.5 w-3.5" />
+              New Project
+            </Link>
+          </Button>
         </div>
-        <Button asChild>
-          <Link to="/dashboard/projects/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Project
-          </Link>
-        </Button>
-      </div>
+      </FadeIn>
 
       {projects && projects.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Projects</CardTitle>
-            <CardDescription>
-              All your projects and their deployment status
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Desktop Table View */}
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Repository</TableHead>
-                    <TableHead>Branch</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Domain</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {projects.map((project) => (
-                    <TableRow key={project.id}>
-                      <TableCell className="font-medium">{project.name}</TableCell>
-                      <TableCell>
-                        <a
-                          href={project.git_repo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-primary hover:underline"
-                        >
-                          <GitBranch className="h-4 w-4" />
-                          {project.git_repo.split('/').pop()}
-                        </a>
-                      </TableCell>
-                      <TableCell>{project.git_branch}</TableCell>
-                      <TableCell>{getStatusBadge(project.status)}</TableCell>
-                      <TableCell>
-                        <a
-                          href={`https://${project.subdomain}.vallexis.app`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-primary hover:underline"
-                        >
-                          {project.subdomain}.vallexis.app
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            asChild
-                          >
-                            <Link to={`/dashboard/deploys/${project.id}`}>
-                              <Settings className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteDialog(project.id)}
-                            className="text-error hover:text-error"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project, i) => (
+            <FadeIn key={project.id} delay={i * 100}>
+              <div className="group relative p-3.5 sm:p-4 rounded-xl glass card-hover h-full">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-primary/10 to-transparent rounded-bl-[30px] opacity-0 group-hover:opacity-100 transition-opacity" />
 
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="border border-border-subtle rounded-lg p-4 space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-lg">{project.name}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        {getStatusBadge(project.status)}
+                <div className="relative">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-heading text-sm sm:text-base font-bold text-text-primary truncate">{project.name}</h3>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant={getStatusStyle(project.status) as any} className="text-[9px] px-1.5 py-0">
+                          {project.status}
+                        </Badge>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        asChild
-                      >
-                        <Link to={`/dashboard/deploys/${project.id}`}>
-                          <Settings className="h-4 w-4" />
+                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      <Button variant="ghost" size="icon" asChild className="h-7 w-7" aria-label="Project settings">
+                        <Link to={`/dashboard/deploys/${project.id}?tab=settings`}>
+                          <Settings className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeleteDialog(project.id)}
-                        className="text-error hover:text-error"
+                        className="h-7 w-7 text-error hover:text-error hover:bg-error/10"
+                        aria-label="Delete project"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <GitBranch className="h-4 w-4 text-text-muted" />
+
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center gap-1.5 text-text-secondary min-w-0">
+                      <GitBranch className="h-3.5 w-3.5 text-text-muted flex-shrink-0" />
                       <a
                         href={project.git_repo}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-primary hover:underline"
+                        className="text-blue-primary hover:underline truncate"
                       >
                         {project.git_repo.split('/').pop()}
                       </a>
+                      <span className="text-text-muted flex-shrink-0">·</span>
+                      <span className="text-text-muted truncate">{project.git_branch}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-text-muted">Branch:</span>
-                      <span>{project.git_branch}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ExternalLink className="h-3 w-3 text-text-muted" />
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <ExternalLink className="h-3 w-3 text-text-muted flex-shrink-0" />
                       <a
-                        href={`https://${project.subdomain}.vallexis.app`}
+                        href={`https://${project.subdomain}.${APP_DOMAIN}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-primary hover:underline"
+                        className="text-text-secondary hover:text-blue-primary transition-colors truncate text-[11px]"
                       >
-                        {project.subdomain}.vallexis.app
+                        {project.subdomain}.{APP_DOMAIN}
                       </a>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
       ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="text-center space-y-4">
-              <div className="text-6xl">🚀</div>
-              <h3 className="font-heading text-xl font-semibold">No projects yet</h3>
-              <p className="text-text-secondary max-w-md">
-                Get started by creating your first project. Connect your Git repository and deploy in seconds.
-              </p>
-              <Button asChild>
-                <Link to="/dashboard/projects/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Your First Project
-                </Link>
-              </Button>
+        <FadeIn>
+          <div className="rounded-2xl glass p-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-primary/20 to-purple-primary/20 flex items-center justify-center mx-auto mb-4">
+              <FolderKanban className="h-8 w-8 text-blue-glow" />
             </div>
-          </CardContent>
-        </Card>
+            <h3 className="font-heading text-xl font-semibold mb-2">No projects yet</h3>
+            <p className="text-text-secondary max-w-md mx-auto mb-6">
+              Get started by creating your first project. Connect your Git repository and deploy in seconds.
+            </p>
+            <Button asChild className="bg-blue-primary hover:bg-blue-vivid">
+              <Link to="/dashboard/projects/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Your First Project
+              </Link>
+            </Button>
+          </div>
+        </FadeIn>
       )}
 
       {/* Delete Confirmation Dialog */}
       {deleteDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-overlay/80 backdrop-blur-sm">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Delete Project</CardTitle>
-              <CardDescription>
-                Are you sure you want to delete this project? This action cannot be undone.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex gap-2 justify-end">
+          <div className="w-full max-w-md p-5 sm:p-6 rounded-2xl glass">
+            <h3 className="font-heading text-lg font-semibold mb-2">Delete Project</h3>
+            <p className="text-text-secondary text-sm mb-6">
+              Are you sure you want to delete this project? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setDeleteDialog(null)}>
                 Cancel
               </Button>
@@ -252,8 +185,8 @@ export function Projects() {
               >
                 {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
     </div>

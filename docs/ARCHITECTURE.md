@@ -1,7 +1,7 @@
 # ARCHITECTURE.md — System Design
 
 > **Last Updated:** June 23, 2026
-> **Status:** Production (v0.2.0)
+> **Status:** Production (v0.1.0)
 
 ---
 

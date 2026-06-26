@@ -1,5 +1,6 @@
 # RUNBOOK.md — Operational Runbook
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 > **On-call contact:** `oncall@vallexis.io` · Slack `#alerts`
 

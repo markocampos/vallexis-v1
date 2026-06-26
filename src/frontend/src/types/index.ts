@@ -21,7 +21,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  plan: 'free' | 'starter' | 'pro' | 'enterprise';
+  plan: 'free' | 'starter' | 'pro';
   storage_used_bytes: number;
   storage_limit: number;
   created_at: string;
@@ -58,8 +58,8 @@ export interface UpdateProjectRequest {
 export interface Deploy {
   id: string;
   project_id: string;
-  status: 'pending' | 'building' | 'deployed' | 'failed';
-  commit_hash?: string;
+  status: 'queued' | 'running' | 'success' | 'failed';
+  commit_sha?: string;
   commit_message?: string;
   created_at: string;
   completed_at?: string;
@@ -88,8 +88,11 @@ export interface UploadRequest {
 // Billing types
 export interface Subscription {
   id: string;
-  plan: 'free' | 'starter' | 'pro' | 'enterprise';
+  plan: 'free' | 'starter' | 'pro';
   status: 'active' | 'past_due' | 'canceled' | 'trialing';
+  amount_cents: number;
+  currency: string;
+  interval: 'monthly' | 'yearly';
   current_period_start: string;
   current_period_end: string;
   cancel_at_period_end: boolean;
@@ -99,7 +102,7 @@ export interface Invoice {
   id: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'paid' | 'failed';
+  status: 'draft' | 'open' | 'paid' | 'void' | 'uncollectible';
   created_at: string;
   due_date?: string;
   invoice_url?: string;

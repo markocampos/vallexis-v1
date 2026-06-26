@@ -1,5 +1,6 @@
 # OBSERVABILITY.md — Monitoring & Observability Setup
 
+> **Version:** 0.1.0
 > **Last Updated:** June 23, 2026
 
 This guide covers setting up and using the Vallexis observability stack: Prometheus, Grafana, log aggregation, alerting, and uptime monitoring.
