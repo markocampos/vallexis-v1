@@ -38,6 +38,10 @@ Thumbs.db
 # =========================
 # Binaries
 bin/
+api-gateway
+deploy-service
+payment-service
+seo-service
 *.exe
 *.exe~
 *.dll
