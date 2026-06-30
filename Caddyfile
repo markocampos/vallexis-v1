@@ -7,12 +7,15 @@
         X-Frame-Options DENY
         Referrer-Policy strict-origin-when-cross-origin
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'"
         Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
     }
 }
 
 vallexis.io {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    }
     redir https://app.vallexis.io{uri}
 }
 

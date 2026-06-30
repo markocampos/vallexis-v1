@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, HardDrive, CreditCard, Settings } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, HardDrive, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -7,7 +7,6 @@ const navItems = [
   { to: '/dashboard/projects', label: 'Projects', icon: FolderKanban, end: false },
   { to: '/dashboard/storage', label: 'Storage', icon: HardDrive, end: false },
   { to: '/dashboard/billing', label: 'Billing', icon: CreditCard, end: false },
-  { to: '/dashboard/settings', label: 'Settings', icon: Settings, end: false },
 ];
 
 export function BottomNav() {

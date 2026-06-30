@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/ui/animated';
 import { BackgroundPattern } from '@/components/ui/background-pattern';
+import { PublicHeader } from '@/components/layout/PublicHeader';
 import {
   Rocket,
   Database,
@@ -19,9 +20,7 @@ import {
   Activity,
   Play,
   RefreshCw,
-  GitBranch,
-  Menu,
-  X
+  GitBranch
 } from 'lucide-react';
 
 const features = [
@@ -43,7 +42,6 @@ export function Landing() {
   const [demoTab, setDemoTab] = useState<'logs' | 'metrics' | 'config'>('logs');
   const [archTab, setArchTab] = useState<'edge' | 'storage' | 'database'>('edge');
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleFaq = (index: number) => {
     setFaqOpen(faqOpen === index ? null : index);
@@ -74,112 +72,7 @@ export function Landing() {
 
   return (
     <div className="min-h-screen bg-bg-deep selection:bg-blue-primary/30 selection:text-white relative overflow-hidden">
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-40 w-full glass border-b border-border-subtle backdrop-blur-md">
-        <div className="container mx-auto flex h-16 items-center justify-between px-3 max-w-6xl">
-          <div className="flex items-center gap-2">
-            <span className="font-heading text-lg font-bold gradient-text flex items-center gap-1.5">
-              Vallexis
-            </span>
-          </div>
-          <nav className="hidden md:flex items-center gap-3 lg:gap-4 text-xs font-semibold">
-            <a href="/product" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">Product</a>
-            <a href="/features" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">Features</a>
-            <a href="/pricing" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">Pricing</a>
-            <a href="/architecture" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">Architecture</a>
-            <a href="/faq" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">FAQ</a>
-            <a href="/security" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">Security</a>
-            <a href="/status" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">Status</a>
-            <a href="/docs" className="text-text-secondary hover:text-text-primary transition-colors py-2 px-1">Documentation</a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <a href="/login" className="hidden sm:inline-flex text-sm font-medium text-text-secondary hover:text-text-primary transition-colors px-3 py-2">
-              Sign In
-            </a>
-            <Button size="sm" asChild className="bg-blue-primary hover:bg-blue-vivid text-white shadow-md rounded-lg">
-              <a href="/register">Deploy Free</a>
-            </Button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-text-secondary hover:text-text-primary transition-colors focus:outline-none rounded-lg hover:bg-bg-surface/50 border border-transparent hover:border-border-subtle"
-              aria-label="Toggle Menu"
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu Panel */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border-subtle bg-bg-surface/95 backdrop-blur-md px-4 py-4 space-y-3 animate-fade-in">
-            <a
-              href="/product"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border-b border-border-subtle/50"
-            >
-              Product
-            </a>
-            <a
-              href="/features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border-b border-border-subtle/50"
-            >
-              Features
-            </a>
-            <a
-              href="/pricing"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border-b border-border-subtle/50"
-            >
-              Pricing
-            </a>
-            <a
-              href="/architecture"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border-b border-border-subtle/50"
-            >
-              Architecture
-            </a>
-            <a
-              href="/faq"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border-b border-border-subtle/50"
-            >
-              FAQ
-            </a>
-            <a
-              href="/security"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border-b border-border-subtle/50"
-            >
-              Security
-            </a>
-            <a
-              href="/status"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border-b border-border-subtle/50"
-            >
-              Status
-            </a>
-            <a
-              href="/docs"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2"
-            >
-              Documentation
-            </a>
-            <div className="pt-2 flex flex-col gap-2 sm:hidden">
-              <a
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-center text-sm font-medium text-text-secondary hover:text-text-primary transition-colors py-2 border border-border-subtle rounded-lg bg-bg-deep/50"
-              >
-                Sign In
-              </a>
-            </div>
-          </div>
-        )}
-      </header>
+      <PublicHeader />
 
       {/* Glowing background overlays */}
 
@@ -187,13 +80,6 @@ export function Landing() {
       <section className="relative overflow-hidden pt-12 pb-8 sm:pt-20 sm:pb-12 lg:pt-24 lg:pb-16 z-10">
         <BackgroundPattern />
 
-        {/* Hero image - decorative */}
-        <img
-          src="/src/assets/hero.png"
-          alt=""
-          className="hidden sm:block absolute -right-8 lg:right-10 top-1/2 -translate-y-1/2 w-48 lg:w-64 opacity-20 sm:opacity-30 pointer-events-none"
-          aria-hidden="true"
-        />
 
         <div className="relative container mx-auto px-4 text-center max-w-4xl">
           <FadeIn>

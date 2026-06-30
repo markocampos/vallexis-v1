@@ -22,44 +22,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const userData = await api.get<User>('users/me');
       setUser(userData);
     } catch (error) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
   const login = async (email: string, password: string) => {
-    const response = await api.post<{ access_token: string; refresh_token: string }>('auth/login', { email, password });
-
-    localStorage.setItem('access_token', response.access_token);
-    localStorage.setItem('refresh_token', response.refresh_token);
-
+    await api.post<{ access_token: string; refresh_token: string }>('auth/login', { email, password });
     await refreshUser();
   };
 
   const register = async (email: string, password: string, name: string) => {
-    const response = await api.post<{ access_token: string; refresh_token: string }>('auth/register', { email, password, name });
-
-    localStorage.setItem('access_token', response.access_token);
-    localStorage.setItem('refresh_token', response.refresh_token);
-
+    await api.post<{ access_token: string; refresh_token: string }>('auth/register', { email, password, name });
     await refreshUser();
   };
 
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+  const logout = async () => {
+    try {
+      await api.post('auth/logout');
+    } catch (error) {
+      // ignore
+    }
     setUser(null);
     window.location.href = '/login';
   };
@@ -69,7 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await api.get<User>('users/me');
       setUser(userData);
     } catch (error) {
-      logout();
+      setUser(null);
+      window.location.href = '/login';
     }
   };
 

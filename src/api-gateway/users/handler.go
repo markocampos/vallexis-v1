@@ -3,6 +3,9 @@ package users
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
@@ -103,20 +106,68 @@ func (h *Handler) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validation
 	if req.Name != "" {
-		_, _ = h.db.ExecContext(r.Context(), `UPDATE users SET name = $1 WHERE id = $2`, req.Name, userID)
+		if err := ValidateUpdateProfile(UpdateProfileRequest{Name: req.Name}); err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 	}
 	if req.Email != "" {
-		_, _ = h.db.ExecContext(r.Context(), `UPDATE users SET email = $1 WHERE id = $2`, req.Email, userID)
+		if err := auth.ValidateEmail(req.Email); err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 	}
 	if req.Timezone != "" {
-		_, _ = h.db.ExecContext(r.Context(), `UPDATE users SET timezone = $1 WHERE id = $2`, req.Timezone, userID)
+		if _, err := time.LoadLocation(req.Timezone); err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, "invalid timezone: "+err.Error())
+			return
+		}
 	}
 	if req.Language != "" {
-		_, _ = h.db.ExecContext(r.Context(), `UPDATE users SET language = $1 WHERE id = $2`, req.Language, userID)
+		lang := strings.ToLower(req.Language)
+		if lang != "en" && lang != "es" && lang != "fr" && lang != "de" {
+			httpx.WriteError(w, http.StatusBadRequest, "unsupported language (only en, es, fr, de are supported)")
+			return
+		}
+	}
+
+	// Database updates with error handling
+	if req.Name != "" {
+		_, err := h.db.ExecContext(r.Context(), `UPDATE users SET name = $1 WHERE id = $2`, req.Name, userID)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to update name")
+			return
+		}
+	}
+	if req.Email != "" {
+		_, err := h.db.ExecContext(r.Context(), `UPDATE users SET email = $1 WHERE id = $2`, req.Email, userID)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to update email")
+			return
+		}
+	}
+	if req.Timezone != "" {
+		_, err := h.db.ExecContext(r.Context(), `UPDATE users SET timezone = $1 WHERE id = $2`, req.Timezone, userID)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to update timezone")
+			return
+		}
+	}
+	if req.Language != "" {
+		_, err := h.db.ExecContext(r.Context(), `UPDATE users SET language = $1 WHERE id = $2`, req.Language, userID)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to update language")
+			return
+		}
 	}
 	if req.Notifications != nil {
-		_, _ = h.db.ExecContext(r.Context(), `UPDATE users SET notifications = $1 WHERE id = $2`, req.Notifications, userID)
+		_, err := h.db.ExecContext(r.Context(), `UPDATE users SET notifications = $1 WHERE id = $2`, req.Notifications, userID)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to update notifications")
+			return
+		}
 	}
 
 	h.GetSettings(w, r)
@@ -145,8 +196,8 @@ func (h *Handler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(req.NewPassword) < 8 {
-		httpx.WriteError(w, http.StatusBadRequest, "password must be at least 8 characters")
+	if err := auth.ValidatePassword(req.NewPassword); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -181,6 +232,10 @@ func (h *Handler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]string{"message": "password updated"})
 }
 
+type deleteAccountRequest struct {
+	Password string `json:"password"`
+}
+
 func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 	userID := auth.UserIDFromContext(r.Context())
 	if userID == "" {
@@ -188,11 +243,39 @@ func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := h.db.ExecContext(r.Context(), `DELETE FROM users WHERE id = $1`, userID)
+	var req deleteAccountRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if req.Password == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "password is required to delete account")
+		return
+	}
+
+	var passwordHash string
+	err := h.db.QueryRowContext(r.Context(),
+		`SELECT password_hash FROM users WHERE id = $1`, userID,
+	).Scan(&passwordHash)
+	if err != nil {
+		httpx.WriteError(w, http.StatusNotFound, "user not found")
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.Password)); err != nil {
+		httpx.WriteError(w, http.StatusUnauthorized, "incorrect password")
+		return
+	}
+
+	_, err = h.db.ExecContext(r.Context(), `DELETE FROM users WHERE id = $1`, userID)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to delete account")
 		return
 	}
+
+	// Remove uploaded files for this user
+	_ = os.RemoveAll("uploads/" + userID)
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]string{"message": "account deleted"})
 }

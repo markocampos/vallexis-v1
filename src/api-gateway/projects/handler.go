@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -31,13 +32,13 @@ type createJSON struct {
 }
 
 type projectResponse struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	GitRepo   string `json:"git_repo"`
-	GitBranch string `json:"git_branch"`
-	Subdomain string `json:"subdomain"`
-	Status    string `json:"status"`
-	CreatedAt string `json:"created_at"`
+	ID        string    `db:"id" json:"id"`
+	Name      string    `db:"name" json:"name"`
+	GitRepo   string    `db:"git_repo" json:"git_repo"`
+	GitBranch string    `db:"git_branch" json:"git_branch"`
+	Subdomain string    `db:"subdomain" json:"subdomain"`
+	Status    string    `db:"status" json:"status"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +61,21 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 			msgs[i] = e.Error()
 		}
 		httpx.WriteJSON(w, http.StatusUnprocessableEntity, map[string]any{"errors": msgs})
+		return
+	}
+
+	var plan string
+	if err := h.db.QueryRowContext(r.Context(), `SELECT plan FROM users WHERE id = $1`, userID).Scan(&plan); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to load user plan")
+		return
+	}
+	var currentCount int64
+	if err := h.db.QueryRowContext(r.Context(), `SELECT COUNT(*) FROM projects WHERE user_id = $1`, userID).Scan(&currentCount); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to count projects")
+		return
+	}
+	if err := CanCreateProject(plan, int(currentCount)); err != nil {
+		httpx.WriteError(w, http.StatusForbidden, err.Error())
 		return
 	}
 
@@ -96,9 +112,16 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pg := httpx.ParsePagination(r)
+
+	var total int64
+	_ = h.db.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM projects WHERE user_id = $1`, userID,
+	).Scan(&total)
+
 	rows, err := h.db.QueryxContext(r.Context(),
 		`SELECT id, name, git_repo, git_branch, subdomain, status, created_at
-		 FROM projects WHERE user_id = $1 ORDER BY created_at DESC`, userID,
+		 FROM projects WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, pg.Limit, pg.Offset,
 	)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to list projects")
@@ -115,11 +138,15 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		}
 		projects = append(projects, p)
 	}
+	if err := rows.Err(); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to iterate projects")
+		return
+	}
 
 	if projects == nil {
 		projects = []projectResponse{}
 	}
-	httpx.WriteJSON(w, http.StatusOK, projects)
+	httpx.WriteJSON(w, http.StatusOK, httpx.PaginatedResponse{Data: projects, Total: total, Page: pg.Page, Limit: pg.Limit})
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {

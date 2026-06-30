@@ -1,6 +1,8 @@
 .PHONY: help dev-backend dev-api dev-deploy dev-payment dev-seo migrate migrate-down seed test lint fmt scan build logs reset-db
 
-COMPOSE_DEV := docker compose -f docker-compose.dev.yml
+export PATH := $(HOME)/go/bin:$(PATH)
+
+COMPOSE_DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 
 # All backend Go services — single source of truth
 SERVICES := api-gateway deploy-service payment-service seo-service
@@ -11,19 +13,24 @@ help: ## List all available make commands
 # --- Development ---
 
 dev-backend: ## Start all backend services with hot-reload
-	@$(foreach svc,$(SERVICES),air -c .air.toml -- $(svc) &) wait
+	@mkdir -p ./tmp/api-gateway ./tmp/deploy-service ./tmp/payment-service ./tmp/seo-service
+	@API_PORT=3000 air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/api-gateway/main ./src/api-gateway" -build.bin "./tmp/api-gateway/main" -build.exclude_dir "tmp,node_modules,vendor,tests,docs,scripts,secrets,migrations" -build.delay 500 &
+	@DEPLOY_PORT=3001 air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/deploy-service/main ./src/deploy-service" -build.bin "./tmp/deploy-service/main" -build.exclude_dir "tmp,node_modules,vendor,tests,docs,scripts,secrets,migrations" -build.delay 500 &
+	@PAYMENT_PORT=3002 air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/payment-service/main ./src/payment-service" -build.bin "./tmp/payment-service/main" -build.exclude_dir "tmp,node_modules,vendor,tests,docs,scripts,secrets,migrations" -build.delay 500 &
+	@SEO_PORT=3003 air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/seo-service/main ./src/seo-service" -build.bin "./tmp/seo-service/main" -build.exclude_dir "tmp,node_modules,vendor,tests,docs,scripts,secrets,migrations" -build.delay 500 &
+	@wait
 
 dev-api: ## Start api-gateway only
-	air -c .air.toml -- api-gateway
+	air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/main ./src/api-gateway"
 
 dev-deploy: ## Start deploy-service only
-	air -c .air.toml -- deploy-service
+	air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/main ./src/deploy-service"
 
 dev-payment: ## Start payment-service only
-	air -c .air.toml -- payment-service
+	air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/main ./src/payment-service"
 
 dev-seo: ## Start seo-service only
-	air -c .air.toml -- seo-service
+	air -c .air.toml -build.cmd "go build -buildvcs=false -o ./tmp/main ./src/seo-service"
 
 # --- Database ---
 
@@ -90,7 +97,7 @@ fmt: ## Format all Go code
 	goimports -w .
 
 scan: ## Run Trivy security scan on all images
-	@$(foreach svc,$(SERVICES),trivy image --severity CRITICAL,HIGH $(svc):latest;)
+	@$(foreach svc,$(SERVICES),docker build -t vallexis-$(svc):scan -f src/$(svc)/Dockerfile . && trivy image --severity CRITICAL,HIGH vallexis-$(svc):scan;)
 
 # --- Docker ---
 

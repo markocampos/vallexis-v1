@@ -53,6 +53,8 @@ coverage.out
 # Go workspace
 go.work
 go.work.sum
+.air.toml
+tmp/
 
 # Vendor
 vendor/
@@ -81,6 +83,7 @@ coverage/
 # Docker
 # =========================
 docker-compose.override.yml
+**/Dockerfile.dev
 
 # =========================
 # Logs, Data, and Secrets
@@ -91,3 +94,9 @@ data/
 backups/
 secrets/
 *.pem
+
+# =========================
+# Working Documents
+# =========================
+TODO.md
+TREE.md

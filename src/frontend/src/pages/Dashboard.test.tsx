@@ -34,7 +34,7 @@ describe('Dashboard Page', () => {
     expect(screen.getByText('Active Projects')).toBeInTheDocument();
     expect(screen.getByText('Object Storage')).toBeInTheDocument();
     expect(screen.getByText('Subscription Plan')).toBeInTheDocument();
-    expect(screen.getByText('Edge Network')).toBeInTheDocument();
+    expect(screen.getByText('API Status')).toBeInTheDocument();
   });
 
   it('renders the container applications section', () => {

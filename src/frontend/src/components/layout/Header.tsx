@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useKeyboardDialog } from '@/hooks/useKeyboardDialog';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -20,6 +21,11 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const logoutModalRef = useKeyboardDialog(showLogoutModal, () => {
+    setShowLogoutModal(false);
+    endHold();
+  });
   const [progress, setProgress] = useState(0);
   const animationFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
@@ -70,8 +76,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full glass border-b border-border-subtle">
-        <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
+      <header className="sticky top-0 z-40 w-full glass border-b border-border-subtle backdrop-blur-sm">
+        <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 md:px-6 h-16">
           <div className="flex items-center gap-4">
             <button
               onClick={onMenuClick}
@@ -87,18 +93,21 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-3">
+
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="relative h-9 w-9 rounded-full glass border border-border-subtle hover:border-border-interactive transition-colors cursor-pointer">
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-gradient-to-br from-blue-primary/20 to-purple-primary/20 text-text-primary text-sm font-medium">
+                  <button className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full glass border border-border-subtle hover:border-border-interactive transition-colors cursor-pointer flex items-center justify-center">
+                    <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-primary/20 to-purple-primary/20 text-text-primary text-xs sm:text-sm font-medium">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent className="w-56 glass border border-border-subtle" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal p-2.5">
                     <div className="flex flex-col space-y-1">
@@ -145,7 +154,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       {/* Logout Hold-to-Confirm Dialog */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-overlay/80 backdrop-blur-sm">
+        <div ref={logoutModalRef} role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-bg-overlay/80 backdrop-blur-sm">
           <div className="w-full max-w-sm p-4 sm:p-5 rounded-xl border border-border-subtle bg-bg-surface glass shadow-2xl m-3">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="h-5 w-5 text-error" />

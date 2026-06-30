@@ -264,11 +264,21 @@ Update the authenticated user's profile. All fields optional.
 
 #### `DELETE /users/me`
 
-Schedules the account for deletion. Data is purged within 30 days. All active projects are stopped immediately.
+Permanently deletes the user account and all associated data. Requires password confirmation.
+
+**Request body:**
+```json
+{ "password": "your-current-password" }
+```
 
 **Response `200`:**
 ```json
-{ "message": "Account scheduled for deletion. All data will be purged within 30 days." }
+{ "message": "account deleted" }
+```
+
+**Error `401`:**
+```json
+{ "error": "incorrect password" }
 ```
 
 ---
@@ -812,20 +822,20 @@ All error responses share this structure:
 
 ## Rate Limits
 
-All responses include the following headers:
+All authenticated endpoints are rate-limited to **100 requests per minute per IP**. Login and register endpoints have stricter per-IP limits (10 attempts per minute).
+
+All responses include the following headers when rate limiting is active:
 
 ```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 87
-X-RateLimit-Reset: 1719038400
-Retry-After: 13          (only present when 429 is returned)
+Retry-After: 60          (only present when 429 is returned)
 ```
 
-| Plan | Requests/min | Deploys/hr | Storage uploads/hr |
-|---|---|---|---|
-| Free | 100 | 5 | 20 |
-| Pro | 500 | 20 | 100 |
-| Enterprise | 2,000 | 100 | Unlimited |
+| Endpoint Group | Limit | Window |
+|---|---|---|
+| Register / Login | 10 per IP | 60 seconds |
+| Free plan | 100 per IP | 60 seconds |
+| Starter plan | 250 per IP | 60 seconds |
+| Pro plan | 500 per IP | 60 seconds |
 
 Rate limit windows reset every 60 seconds. If you exceed the limit, wait for the `Retry-After` duration before retrying.
 
@@ -833,25 +843,27 @@ Rate limit windows reset every 60 seconds. If you exceed the limit, wait for the
 
 ## Pagination
 
-List endpoints support **cursor-based pagination** for consistent, efficient paging through large result sets.
+List endpoints support **offset-based pagination** via `page` and `limit` query parameters.
 
 **Request:**
 ```
-GET /projects?limit=20&cursor=proj_abc123
+GET /projects?page=1&limit=20
 ```
 
 **Response:**
 ```json
 {
-  "projects": [ ... ],
+  "data": [ ... ],
   "total": 47,
-  "next_cursor": "proj_xyz789"
+  "page": 1,
+  "limit": 20
 }
 ```
 
-- `next_cursor` is `null` when you have reached the last page.
-- Pass `next_cursor` as the `cursor` parameter in your next request.
-- Cursors are opaque — do not parse or construct them manually.
+- `page` defaults to `1` if omitted or less than 1.
+- `limit` defaults to `50` if omitted, clamped to max `200`.
+- `total` is the total number of records matching the query.
+- Calculate total pages: `Math.ceil(total / limit)`.
 
 ---
 

@@ -1,25 +1,18 @@
 # =============================================================================
 # Vallexis — Development Overrides
-# Usage: docker compose -f docker-compose.dev.yml up -d postgres redis minio
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 # =============================================================================
 
 services:
   postgres:
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-vallexis}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vallexis_dev}
       POSTGRES_DB: ${POSTGRES_DB:-vallexis_db}
 
-  redis:
-    ports:
-      - "6379:6379"
+  redis: {}
 
   minio:
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}

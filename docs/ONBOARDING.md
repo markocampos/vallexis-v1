@@ -94,7 +94,7 @@ openssl rsa -in secrets/jwt_private.pem -pubout -out secrets/jwt_public.pem
 Start only the infrastructure services first (database, cache, storage):
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d postgres redis minio
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres redis minio
 ```
 
 Wait ~10 seconds, then verify:
@@ -150,11 +150,11 @@ This creates:
 
 | Resource | Details |
 |---|---|
-| Free user | `free@example.com` / `TestPass123!` |
-| Pro user | `pro@example.com` / `TestPass123!` |
-| Sample project | "My Test App" (deployed state) |
-| Sample deploys | 5 historical deploy records |
-| Sample SEO audit | Scores: perf 87, a11y 92, seo 95 |
+| Pro user | `admin@vallexis.io` / `SecurePass123!` |
+| Free user | `free@vallexis.io` / `SecurePass123!` |
+| Starter user | `starter@vallexis.io` / `SecurePass123!` |
+| Subscriptions | Active subscriptions for all users |
+| Sample project | "My App" (deployed state) for pro user |
 
 ---
 
@@ -195,7 +195,7 @@ make dev-seo       # Only seo-service
 cd src/frontend
 
 # Install dependencies (first time only)
-npm install
+npm ci --frozen-lockfile
 
 # Start Vite dev server
 npm run dev
@@ -257,7 +257,7 @@ curl -s http://localhost:3003/health | jq .
 # Register
 curl -s -X POST http://localhost:3000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"free@example.com","password":"TestPass123!"}' | jq .
+  -d '{"email":"admin@vallexis.io","password":"SecurePass123!"}' | jq .
 
 # You should receive an access_token and user object
 ```
@@ -265,7 +265,7 @@ curl -s -X POST http://localhost:3000/api/v1/auth/login \
 ### Dashboard
 
 1. Open http://localhost:5173
-2. Log in with `free@example.com` / `TestPass123!`
+2. Log in with `admin@vallexis.io` / `SecurePass123!`
 3. You should see the dashboard with the seeded project
 
 ### Full Deploy Test

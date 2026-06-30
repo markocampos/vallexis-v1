@@ -36,12 +36,19 @@ All services run on a single Oracle Cloud Always Free ARM A1 instance behind Cad
 │      ├──/seo/*    ──► seo-service      :3003  (Go)                 │
 │      └──/*        ──► react-frontend   :5173  (React/Vite)         │
 │                                                                     │
-│   Internal Network (Docker bridge)                                  │
+│   Docker Networks:                                                  │
+│      frontend-net  — Caddy, React Frontend                         │
+│      backend-net   — Go services, Docker Proxy                     │
+│      db-net        — PostgreSQL, Redis, Exporters                   │
+│      monitoring-net — Prometheus, Grafana, Alertmanager             │
+│                                                                     │
+│   Infrastructure:                                                   │
 │      PostgreSQL   :5432   — primary data store                      │
 │      Redis        :6379   — cache · sessions · queues               │
-│      MinIO        :9000   — S3-compatible object storage            │
+│      MinIO        :9000   — S3-compatible object storage (reserved for future use) │
 │      Prometheus   :9090   — metrics scrape                          │
 │      Grafana      :3100   — dashboards                              │
+│      Docker Proxy :2375   — restricted Docker API access            │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -53,7 +60,7 @@ All services run on a single Oracle Cloud Always Free ARM A1 instance behind Cad
 |---|---|---|---|
 | `react-frontend` | 5173 | TypeScript / React + Vite | Main dashboard UI |
 | `api-gateway` | 3000 | Go (`go-chi/chi`) | Auth, users, projects, billing, routing |
-| `deploy-service` | 3001 | Go | Git cloning, Docker builds, container lifecycle |
+| `deploy-service` | 3001 | Go | Git cloning, Docker builds, container lifecycle (via Docker socket proxy) |
 | `payment-service` | 3002 | Go | PayMongo payment links, webhooks, subscriptions, invoices |
 | `seo-service` | 3003 | Go | Lighthouse audits, sitemap generation, meta tag analysis |
 | `PostgreSQL` | 5432 | — | Primary relational database (v16) |
@@ -160,7 +167,7 @@ users (
   email          TEXT UNIQUE NOT NULL,
   password_hash  TEXT,                          -- null for OAuth-only
   name           TEXT NOT NULL,
-  plan           TEXT NOT NULL DEFAULT 'free',  -- free | pro | enterprise
+  plan           TEXT NOT NULL DEFAULT 'free',  -- free | starter | pro
   paymongo_customer_id TEXT UNIQUE,
   github_id      BIGINT UNIQUE,
   google_id      TEXT UNIQUE,
@@ -249,10 +256,9 @@ seo_audits (
 -- Audit Log
 audit_log (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     UUID REFERENCES users(id),
-  action      TEXT NOT NULL,
-  resource    TEXT,
-  resource_id UUID,
+  user_id     UUID REFERENCES users(id) ON DELETE SET NULL,
+  action      VARCHAR(100) NOT NULL,
+  details     JSONB,
   ip_address  INET,
   user_agent  TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -262,8 +268,12 @@ audit_log (
 **Key indexes:**
 - `projects(user_id)`, `projects(subdomain)`
 - `deploys(project_id, created_at DESC)`
+- `storage_objects(user_id, created_at DESC)`
+- `seo_audits(user_id, created_at DESC)`
+- `bandwidth_usage(user_id, created_at DESC)`
 - `audit_log(user_id, created_at DESC)`
-- `audit_log(created_at)` — for 90-day TTL partition
+- `audit_log(action)`
+- `audit_log(created_at)`
 
 ---
 

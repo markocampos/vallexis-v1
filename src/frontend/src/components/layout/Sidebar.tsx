@@ -6,7 +6,6 @@ import {
   CreditCard,
   HardDrive,
   Search,
-  Settings,
   Sliders
 } from 'lucide-react';
 
@@ -27,7 +26,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     { name: 'Storage', href: '/dashboard/storage', icon: HardDrive, hideOnMobile: true },
     { name: 'SEO Audit', href: '/dashboard/seo', icon: Search, hideOnMobile: false },
     { name: 'Billing', href: '/dashboard/billing', icon: CreditCard, hideOnMobile: true },
-    { name: 'Profile Settings', href: '/dashboard/settings', icon: Settings, hideOnMobile: true },
   ];
 
   if (currentProjectId) {
@@ -52,11 +50,12 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 h-screen w-64 glass border-r border-border-subtle transition-transform duration-300 ease-out md:translate-x-0 md:top-16 md:h-[calc(100vh-4rem)] md:z-30',
+          'fixed left-0 top-0 z-50 h-screen glass border-r border-border-subtle transition-all duration-200 md:translate-x-0 md:z-30',
+          'w-64 md:top-16 md:h-[calc(100vh-4rem)]',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <nav className="flex h-full flex-col px-3 py-4 justify-between">
+        <nav className="flex h-full flex-col px-3 py-3 justify-between">
           <div className="space-y-1">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href ||
@@ -72,7 +71,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   to={item.href}
                   onClick={onClose}
                   className={cn(
-                    'relative items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                    'relative items-center rounded-lg font-medium transition-all duration-200',
+                    'gap-3 px-3 py-2.5 text-sm flex',
                     item.hideOnMobile ? 'hidden md:flex' : 'flex',
                     isItemActive
                       ? 'text-text-primary bg-bg-card'
@@ -80,7 +80,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   )}
                 >
                   {isItemActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-gradient-to-b from-blue-primary to-purple-primary rounded-r" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-gradient-to-b from-blue-primary to-purple-primary rounded-r" />
                   )}
                   <item.icon className={cn('h-4 w-4', isItemActive && 'text-blue-primary')} />
                   {item.name}

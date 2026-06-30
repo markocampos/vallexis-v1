@@ -58,12 +58,11 @@ export interface UpdateProjectRequest {
 export interface Deploy {
   id: string;
   project_id: string;
-  status: 'queued' | 'running' | 'success' | 'failed';
-  commit_sha?: string;
+  status: 'pending' | 'building' | 'deployed' | 'failed';
+  commit_hash?: string;
   commit_message?: string;
   created_at: string;
   completed_at?: string;
-  duration_seconds?: number;
 }
 
 export interface CreateDeployRequest {
@@ -73,16 +72,15 @@ export interface CreateDeployRequest {
 // Storage types
 export interface StorageFile {
   id: string;
-  project_id: string;
-  filename: string;
-  size_bytes: number;
-  content_type: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
   created_at: string;
 }
 
 export interface UploadRequest {
   file: File;
-  project_id: string;
 }
 
 // Billing types

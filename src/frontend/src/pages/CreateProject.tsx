@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import { useToast } from '@/components/ui/toaster';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { FadeIn } from '@/components/ui/animated';
 import { ArrowLeft, GitBranch, Globe, Rocket } from 'lucide-react';
 import { InlineLoader } from '@/components/ui/loading-spinner';
@@ -69,32 +70,31 @@ export function CreateProject() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-0">
+    <div className="max-w-2xl mx-auto px-4 sm:px-0 space-y-6">
+      {/* Standard Header */}
       <FadeIn>
-        <div className="mb-8">
+        <div className="flex flex-col border-b border-border-subtle pb-3 mb-4">
           <button
             onClick={() => navigate('/dashboard/projects')}
-            className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-4"
+            className="flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors mb-3"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Back to Projects
           </button>
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold mb-2">
-            Create New Project
-          </h1>
-          <p className="text-text-secondary">
-            Connect your Git repository to deploy your application
-          </p>
+          <div>
+            <h1 className="font-heading text-lg font-bold text-text-primary">Create New Project</h1>
+            <p className="text-xs text-text-secondary">Connect your Git repository to deploy your application</p>
+          </div>
         </div>
       </FadeIn>
 
       <FadeIn delay={100}>
-        <div className="rounded-2xl glass p-5 sm:p-6 md:p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6" noValidate>
+        <Card variant="elevated" className="p-6 space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             {/* Project Name */}
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
-                <Rocket className="h-4 w-4 text-blue-primary" />
+            <div className="space-y-1.5">
+              <label htmlFor="name" className="text-xs uppercase font-medium text-text-secondary flex items-center gap-2">
+                <Rocket className="h-3.5 w-3.5 text-blue-primary" />
                 Project Name
               </label>
               <Input
@@ -102,23 +102,23 @@ export function CreateProject() {
                 type="text"
                 placeholder="my-awesome-app"
                 aria-invalid={!!errors.name}
-                className="h-11"
+                className="h-10 text-sm"
                 {...register('name')}
               />
               {errors.name ? (
-                <p role="alert" className="text-xs text-error">{errors.name.message}</p>
+                <p role="alert" className="text-[11px] text-error mt-1">{errors.name.message}</p>
               ) : (
-                <p className="text-xs text-text-muted">
+                <p className="text-[11px] text-text-muted mt-1">
                   Subdomain:{' '}
-                  <span className="text-blue-primary font-mono">{subdomainPreview}</span>
+                  <span className="text-blue-primary font-mono font-medium">{subdomainPreview}</span>
                 </p>
               )}
             </div>
 
             {/* Git Repo */}
-            <div className="space-y-2">
-              <label htmlFor="gitRepo" className="text-sm font-medium flex items-center gap-2">
-                <Globe className="h-4 w-4 text-purple-primary" />
+            <div className="space-y-1.5">
+              <label htmlFor="gitRepo" className="text-xs uppercase font-medium text-text-secondary flex items-center gap-2">
+                <Globe className="h-3.5 w-3.5 text-purple-primary" />
                 Git Repository URL
               </label>
               <Input
@@ -126,67 +126,66 @@ export function CreateProject() {
                 type="url"
                 placeholder="https://github.com/username/repo"
                 aria-invalid={!!errors.gitRepo}
-                className="h-11"
+                className="h-10 text-sm"
                 {...register('gitRepo')}
               />
               {errors.gitRepo ? (
-                <p role="alert" className="text-xs text-error">{errors.gitRepo.message}</p>
+                <p role="alert" className="text-[11px] text-error mt-1">{errors.gitRepo.message}</p>
               ) : (
-                <p className="text-xs text-text-muted">
+                <p className="text-[11px] text-text-muted mt-1">
                   Public or private repository from GitHub, GitLab, or Bitbucket
                 </p>
               )}
             </div>
 
             {/* Git Branch */}
-            <div className="space-y-2">
-              <label htmlFor="gitBranch" className="text-sm font-medium flex items-center gap-2">
-                <GitBranch className="h-4 w-4 text-success" />
+            <div className="space-y-1.5">
+              <label htmlFor="gitBranch" className="text-xs uppercase font-medium text-text-secondary flex items-center gap-2">
+                <GitBranch className="h-3.5 w-3.5 text-success" />
                 Git Branch
               </label>
-              <div className="relative">
-                <Input
-                  id="gitBranch"
-                  type="text"
-                  placeholder="main"
-                  aria-invalid={!!errors.gitBranch}
-                  className="h-11"
-                  {...register('gitBranch')}
-                />
-              </div>
+              <Input
+                id="gitBranch"
+                type="text"
+                placeholder="main"
+                aria-invalid={!!errors.gitBranch}
+                className="h-10 text-sm"
+                {...register('gitBranch')}
+              />
               {errors.gitBranch ? (
-                <p role="alert" className="text-xs text-error">{errors.gitBranch.message}</p>
+                <p role="alert" className="text-[11px] text-error mt-1">{errors.gitBranch.message}</p>
               ) : (
-                <p className="text-xs text-text-muted">The branch to deploy (default: main)</p>
+                <p className="text-[11px] text-text-muted mt-1">The branch to deploy (default: main)</p>
               )}
             </div>
 
             {/* Preview */}
-            <div className="p-4 rounded-xl bg-bg-card/50 border border-border-subtle">
-              <p className="text-xs text-text-muted mb-2">Preview</p>
+            <div className="p-3.5 rounded-lg bg-bg-deep/40 border border-border-subtle space-y-1">
+              <p className="text-[10px] uppercase font-semibold text-text-muted">Preview Subdomain</p>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-success" />
-                <span className="text-sm font-mono text-text-secondary">{subdomainPreview}</span>
+                <span className="text-xs font-mono text-text-secondary">{subdomainPreview}</span>
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => navigate('/dashboard/projects')}
-                className="flex-1 px-6 py-2.5 border border-border-subtle text-text-secondary rounded-xl hover:bg-bg-card hover:text-text-primary transition-all"
+                className="flex-1 h-10"
               >
                 Cancel
-              </button>
+              </Button>
               <Button
                 id="create-project-submit-btn"
                 type="submit"
                 disabled={createMutation.isPending}
-                className="flex-1 h-11 bg-blue-primary hover:bg-blue-vivid"
+                className="flex-1 h-10 bg-blue-primary hover:bg-blue-vivid text-white font-medium"
               >
                 {createMutation.isPending ? (
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-2 justify-center">
                     <InlineLoader />
                     Creating...
                   </span>
@@ -196,7 +195,7 @@ export function CreateProject() {
               </Button>
             </div>
           </form>
-        </div>
+        </Card>
       </FadeIn>
     </div>
   );

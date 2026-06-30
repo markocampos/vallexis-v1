@@ -122,6 +122,7 @@ Service running on port `3002`. Handles PayMongo payment links, subscriptions, w
 | `PAYMONGO_PUBLIC_KEY` | **Required** | — | PayMongo public API key. Use `pk_test_...` for dev, `pk_live_...` for prod |
 | `PAYMONGO_WEBHOOK_SECRET` | **Required** | — | Signing secret for PayMongo webhooks. Set in PayMongo Dashboard → Developers → Webhooks |
 | `PAYMONGO_PRO_PRICE_ID` | **Required** | — | PayMongo Price/Product ID for the Pro monthly plan |
+| `PAYMONGO_STARTER_PRICE_ID` | Optional | — | PayMongo Price/Product ID for the Starter monthly plan |
 | `PAYMONGO_PRO_YEARLY_ID` | Optional | — | PayMongo Price/Product ID for Pro annual plan |
 | `FRONTEND_URL` | **Required** | — | Base URL of the frontend — used for PayMongo payment link success/cancel redirect URLs. Example: `https://app.vallexis.io` |
 
@@ -162,6 +163,7 @@ Service running on port `3003`. Runs Lighthouse audits and generates sitemaps.
 | `SEO_PORT` | Optional | `3003` | HTTP port for the SEO service |
 | `DATABASE_URL` | **Required** | — | Same PostgreSQL connection string |
 | `INTERNAL_SECRET` | **Required** | — | Must match api-gateway value |
+| `SEO_SERVICE_URL` | Optional | `http://seo-service:3003` | Internal URL for the SEO service (used by api-gateway) |
 | `CHROME_PATH` | Optional | `/usr/bin/chromium-browser` | Path to the Chromium/Chrome binary used by Lighthouse |
 | `LIGHTHOUSE_THROTTLE` | Optional | `true` | Enable CPU/network throttling in Lighthouse (disable in CI for speed) |
 | `SEO_AUDIT_CONCURRENCY` | Optional | `2` | Max simultaneous Lighthouse audits |

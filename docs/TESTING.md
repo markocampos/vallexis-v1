@@ -285,9 +285,8 @@ test('create project and trigger deploy', async ({ page }) => {
 
 ```bash
 make test         # Go unit + integration tests
-make test-fe      # Frontend unit + component tests
+cd src/frontend && npm run test:ci   # Frontend unit + component tests
 make test-e2e     # E2E tests (requires running services)
-make test-all     # Everything
 ```
 
 ### Go Tests Only
@@ -360,17 +359,21 @@ The CI pipeline runs on every push and PR (see `.github/workflows/ci.yml`):
 PR opened / push
       │
       ├── [Parallel]
-      │   ├── go test -race ./...
       │   ├── golangci-lint run
-      │   ├── npm test (frontend)
-      │   └── trivy image scan
+      │   ├── go test -race ./...
+      │   ├── npm run lint (oxlint)
+      │   └── npm run test:coverage (vitest)
       │
-      ├── [Sequential — only on main branch]
-      │   ├── go test -tags=integration ./...
-      │   └── playwright test (E2E against staging)
+      ├── [Build — after lint+test pass]
+      │   ├── docker build (4 Go services + frontend + caddy)
+      │   └── Save images as artifacts
       │
-      └── [Gate]
-          All checks must pass before merge is allowed
+      ├── [Scan — after build]
+      │   ├── Load images from artifacts
+      │   └── trivy image scan (CRITICAL,HIGH)
+      │
+      └── [Deploy — main branch only, after all pass]
+          └── Documented SSH deploy template
 ```
 
 ---

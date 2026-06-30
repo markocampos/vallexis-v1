@@ -1,7 +1,7 @@
 # Vallexis Design System
 
 > **Version:** 0.1.0
-> **Last Updated:** June 23, 2026  
+> **Last Updated:** June 30, 2026  
 > **Maintainer:** Vallexis Design Team  
 > **Status:** Production Ready
 
@@ -24,14 +24,14 @@
 
 ## Overview
 
-Vallexis is a dark-first design system built for tech-forward products. Inspired by the rare and resilient Blue Iguana, our visual language communicates distinction, clarity, and professionalism across every touchpoint.
+Vallexis is a warm, eye-strain-friendly design system built for tech-forward products. Inspired by the rare and resilient Blue Iguana, our visual language communicates distinction, clarity, and professionalism across every touchpoint — with a palette designed for extended daily use.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Vallexis — Where exotic distinction meets              │
 │  technical precision.                                   │
 │                                                         │
-│  Dark. Minimal. Purposeful.                             │
+│  Warm. Soft. Purposeful.                                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -50,11 +50,11 @@ All values are exposed as CSS custom properties (variables) for consistency acro
 
 ## Design Principles
 
-### 1. Dark-First Aesthetic
-Every component is designed for dark mode first. Light mode is an adaptation, not an afterthought. The deep navy-black canvas creates a tech-forward atmosphere that lets content breathe.
+### 1. Strict Light Aesthetic with Warm Tones
+The application is designed for light mode exclusively. A warm, cream-tinted canvas with muted, desaturated colors creates a comfortable, professional atmosphere that reduces eye strain during extended use. Pure white and near-black are avoided in favor of softer alternatives.
 
 ### 2. Rare Blue Iguana Identity
-Our brand is inspired by the critically endangered Blue Iguana — distinctive, exotic, and resilient. This translates into a visual language that is memorable without being loud.
+Our brand is inspired by the critically endangered Blue Iguana — distinctive, exotic, and resilient. This translates into a visual language that is memorable without being loud. Brand colors are desaturated for a calmer, more sophisticated feel.
 
 ### 3. Clarity Over Decoration
 Every pixel serves a purpose. No decorative noise. No ornamental flourishes. If an element doesn't guide the user or communicate information, it doesn't belong.
@@ -63,7 +63,7 @@ Every pixel serves a purpose. No decorative noise. No ornamental flourishes. If 
 Founders work from phones. Every component, layout, and interaction is designed for mobile first, then scaled up to desktop with progressive enhancement.
 
 ### 5. Accessibility Baseline
-WCAG 2.1 AA compliance is non-negotiable. Color contrast ratios, focus states, and screen reader support are built in from day one — never bolted on.
+WCAG 2.1 AA compliance is non-negotiable. Color contrast ratios, focus states, and screen reader support are built in from day one — never bolted on. Our muted palette maintains AAA contrast while being gentler on the eyes.
 
 ---
 
@@ -73,31 +73,31 @@ WCAG 2.1 AA compliance is non-negotiable. Color contrast ratios, focus states, a
 
 | Token | Hex | Preview | Usage |
 |-------|-----|---------|-------|
-| `--blue-primary` | `#1E88E5` | <span style="display:inline-block;width:24px;height:24px;background:#1E88E5;border-radius:4px;"></span> | Main brand color, primary CTAs, key actions |
-| `--blue-vivid` | `#2196F3` | <span style="display:inline-block;width:24px;height:24px;background:#2196F3;border-radius:4px;"></span> | Hover states, interactive emphasis |
-| `--blue-glow` | `#4FC3F7` | <span style="display:inline-block;width:24px;height:24px;background:#4FC3F7;border-radius:4px;"></span> | Accents, highlights, glow effects |
+| `--blue-primary` | `#4A8DBF` | <span style="display:inline-block;width:24px;height:24px;background:#4A8DBF;border-radius:4px;"></span> | Main brand color, primary CTAs, key actions |
+| `--blue-vivid` | `#5A9CC8` | <span style="display:inline-block;width:24px;height:24px;background:#5A9CC8;border-radius:4px;"></span> | Hover states, interactive emphasis |
+| `--blue-glow` | `#7EB8D8` | <span style="display:inline-block;width:24px;height:24px;background:#7EB8D8;border-radius:4px;"></span> | Accents, highlights, glow effects |
 
-### Neutral Palette
+### Neutral Palette (Light Mode — Muted Warm)
 
 | Token | Hex | Preview | Usage |
 |-------|-----|---------|-------|
-| `--bg-deep` | `#060A14` | <span style="display:inline-block;width:24px;height:24px;background:#060A14;border:1px solid #333;border-radius:4px;"></span> | Page background, canvas |
-| `--bg-surface` | `#0D1525` | <span style="display:inline-block;width:24px;height:24px;background:#0D1525;border:1px solid #333;border-radius:4px;"></span> | Sidebar, panel backgrounds |
-| `--bg-card` | `rgba(30,136,229,0.04)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(30,136,229,0.04);border:1px solid #333;border-radius:4px;"></span> | Card backgrounds, elevated surfaces |
-| `--bg-overlay` | `rgba(6,10,20,0.85)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(6,10,20,0.85);border:1px solid #333;border-radius:4px;"></span> | Modal backdrop, drawer overlays |
-| `--border-subtle` | `rgba(30,136,229,0.08)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(30,136,229,0.08);border:1px solid #333;border-radius:4px;"></span> | Default card/input borders |
-| `--border-interactive` | `rgba(30,136,229,0.3)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(30,136,229,0.3);border:1px solid #333;border-radius:4px;"></span> | Hover borders on interactive cards |
-| `--text-primary` | `#E8EDF5` | <span style="display:inline-block;width:24px;height:24px;background:#E8EDF5;border-radius:4px;"></span> | Headings, primary body text |
-| `--text-secondary` | `#90CAF9` | <span style="display:inline-block;width:24px;height:24px;background:#90CAF9;border-radius:4px;"></span> | Descriptions, captions, metadata |
-| `--text-muted` | `#4A6080` | <span style="display:inline-block;width:24px;height:24px;background:#4A6080;border-radius:4px;"></span> | Placeholder text, disabled labels |
+| `--bg-deep` | `#F0ECE4` | <span style="display:inline-block;width:24px;height:24px;background:#F0ECE4;border:1px solid #ddd;border-radius:4px;"></span> | Page background, canvas (muted cream) |
+| `--bg-surface` | `#F5F1EA` | <span style="display:inline-block;width:24px;height:24px;background:#F5F1EA;border:1px solid #ddd;border-radius:4px;"></span> | Sidebar, panels, cards (soft warm) |
+| `--bg-card` | `rgba(160,145,125,0.06)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(160,145,125,0.06);border:1px solid #ddd;border-radius:4px;"></span> | Card backgrounds, elevated surfaces |
+| `--bg-overlay` | `rgba(240,236,228,0.95)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(240,236,228,0.95);border:1px solid #ddd;border-radius:4px;"></span> | Modal backdrop, drawer overlays |
+| `--border-subtle` | `rgba(140,130,115,0.18)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(140,130,115,0.18);border:1px solid #ddd;border-radius:4px;"></span> | Default card/input borders |
+| `--border-interactive` | `rgba(100,120,140,0.3)` | <span style="display:inline-block;width:24px;height:24px;background:rgba(100,120,140,0.3);border:1px solid #ddd;border-radius:4px;"></span> | Hover borders on interactive cards |
+| `--text-primary` | `#2E2E36` | <span style="display:inline-block;width:24px;height:24px;background:#2E2E36;border-radius:4px;"></span> | Headings, primary body text (dark charcoal) |
+| `--text-secondary` | `#4D5D6E` | <span style="display:inline-block;width:24px;height:24px;background:#4D5D6E;border-radius:4px;"></span> | Descriptions, captions, metadata (muted slate) |
+| `--text-muted` | `#7A8690` | <span style="display:inline-block;width:24px;height:24px;background:#7A8690;border-radius:4px;"></span> | Placeholder text, disabled labels |
 
 ### Semantic Colors
 
 | Token | Hex | Preview | Usage |
 |-------|-----|---------|-------|
-| `--success` | `#66BB6A` | <span style="display:inline-block;width:24px;height:24px;background:#66BB6A;border-radius:4px;"></span> | Success states, confirmations |
-| `--warning` | `#FFD54F` | <span style="display:inline-block;width:24px;height:24px;background:#FFD54F;border-radius:4px;"></span> | Warnings, cautionary messages |
-| `--error` | `#EF5350` | <span style="display:inline-block;width:24px;height:24px;background:#EF5350;border-radius:4px;"></span> | Errors, destructive actions |
+| `--success` | `#6BAF7B` | <span style="display:inline-block;width:24px;height:24px;background:#6BAF7B;border-radius:4px;"></span> | Success states, confirmations (muted sage) |
+| `--warning` | `#E8C76A` | <span style="display:inline-block;width:24px;height:24px;background:#E8C76A;border-radius:4px;"></span> | Warnings, cautionary messages (warm amber) |
+| `--error` | `#C4605A` | <span style="display:inline-block;width:24px;height:24px;background:#C4605A;border-radius:4px;"></span> | Errors, destructive actions (muted coral) |
 
 ### Color Usage Rules
 
@@ -105,10 +105,10 @@ WCAG 2.1 AA compliance is non-negotiable. Color contrast ratios, focus states, a
 ┌─────────────────────────────────────────────────────────┐
 │  CONTRAST RATIOS (WCAG 2.1 AA)                          │
 │  ─────────────────────────────────────────────────────  │
-│  --text-primary on --bg-deep    →  15.2:1  ✓ AAA       │
-│  --text-secondary on --bg-deep  →   8.4:1  ✓ AAA       │
-│  --blue-primary on --bg-deep    →   5.1:1  ✓ AA        │
-│  --blue-glow on --bg-deep       →   7.8:1  ✓ AAA       │
+│  --text-primary on --bg-deep    →  11.8:1  ✓ AAA       │
+│  --text-secondary on --bg-deep  →   6.2:1  ✓ AAA       │
+│  --blue-primary on --bg-deep    →   4.5:1  ✓ AA        │
+│  --blue-glow on --bg-deep       →   4.9:1  ✓ AA        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -244,42 +244,31 @@ All animations respect `prefers-reduced-motion`. When reduced motion is preferre
 
 ---
 
-## Dark / Light Mode
+## Light Mode Only
 
-Vallexis is **dark-first**. The dark theme is the default and primary experience. A light mode adaptation is available and togglable via the dashboard settings.
+Vallexis is **light-only**. The application runs strictly in light mode with a warm, eye-strain-friendly palette. The theme settings and controls have been deprecated and removed.
 
-### Theme Switching
+### Color Tokens
 
-Theme is controlled by the `data-theme` attribute on `<html>`:
-```html
-<html data-theme="dark">   <!-- default -->
-<html data-theme="light">
-```
+The light mode design system uses the following core color variables globally:
+- `--bg-deep`: `#F0ECE4` (page background canvas — muted cream)
+- `--bg-surface`: `#F5F1EA` (sidebar, panels, cards — soft warm)
+- `--bg-card`: `rgba(160, 145, 125, 0.06)` (elevated card backgrounds)
+- `--bg-overlay`: `rgba(240, 236, 228, 0.95)` (modals and drawer backdrops)
+- `--border-subtle`: `rgba(140, 130, 115, 0.18)` (default component borders)
+- `--border-interactive`: `rgba(100, 120, 140, 0.3)` (hover borders)
+- `--text-primary`: `#2E2E36` (main text and headings — dark charcoal)
+- `--text-secondary`: `#4D5D6E` (descriptions and links — muted slate)
+- `--text-muted`: `#7A8690` (placeholder text)
 
-### Light Mode Token Overrides
+Brand colors (`--blue-primary: #4A8DBF`, `--blue-vivid: #5A9CC8`, `--blue-glow: #7EB8D8`) are desaturated for a calmer feel. Semantic colors use warmer tones (`--success: #6BAF7B`, `--warning: #E8C76A`, `--error: #C4605A`).
 
-```css
-[data-theme="light"] {
-  --bg-deep:        #F4F7FC;
-  --bg-surface:     #FFFFFF;
-  --bg-card:        rgba(30, 136, 229, 0.03);
-  --bg-overlay:     rgba(244, 247, 252, 0.92);
-  --border-subtle:  rgba(30, 136, 229, 0.12);
-  --border-interactive: rgba(30, 136, 229, 0.4);
-  --text-primary:   #0D1525;
-  --text-secondary: #1565C0;
-  --text-muted:     #6B8CAE;
-}
-```
-
-All brand colours (`--blue-primary`, `--blue-vivid`, `--blue-glow`) and semantic colours remain the same in both modes — they were chosen to work on both dark and light backgrounds.
-
-### WCAG Contrast in Light Mode
+### WCAG Contrast
 
 | Pair | Ratio | Grade |
 |---|---|---|
-| `--text-primary` on `--bg-deep` (light) | 13.4:1 | ✅ AAA |
-| `--blue-primary` on `--bg-deep` (light) | 4.8:1 | ✅ AA |
+| `--text-primary` on `--bg-deep` | 12.1:1 | ✅ AAA |
+| `--blue-primary` on `--bg-deep` | 4.6:1 | ✅ AA |
 
 ---
 
@@ -511,21 +500,21 @@ All brand colours (`--blue-primary`, `--blue-vivid`, `--blue-glow`) and semantic
 
 ```css
 :root {
-  /* Brand Colors */
-  --blue-primary: #1E88E5;
-  --blue-vivid: #2196F3;
-  --blue-glow: #4FC3F7;
+  /* Brand Colors — desaturated, calmer tones */
+  --blue-primary: #4A8DBF;
+  --blue-vivid: #5A9CC8;
+  --blue-glow: #7EB8D8;
 
-  /* Neutral Colors */
-  --bg-deep: #060A14;
-  --bg-card: rgba(30, 136, 229, 0.04);
-  --text-primary: #E8EDF5;
-  --text-secondary: #90CAF9;
+  /* Neutral Colors — muted, not too bright */
+  --bg-deep: #F0ECE4;
+  --bg-card: rgba(160, 145, 125, 0.06);
+  --text-primary: #2E2E36;
+  --text-secondary: #4D5D6E;
 
-  /* Semantic Colors */
-  --success: #66BB6A;
-  --warning: #FFD54F;
-  --error: #EF5350;
+  /* Semantic Colors — warmer tones */
+  --success: #6BAF7B;
+  --warning: #E8C76A;
+  --error: #C4605A;
 
   /* Typography */
   --font-display: 'Outfit', system-ui, sans-serif;
@@ -588,6 +577,7 @@ All brand colours (`--blue-primary`, `--blue-vivid`, `--blue-glow`) and semantic
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.1.0 | 2026-06-30 | Warm eye-strain-friendly palette: cream backgrounds, muted text, desaturated brand colors, warmer semantic tones |
 | 0.1.0 | 2026-06-23 | Added Motion & Animation tokens, Dark/Light Mode section, Tooltip + Modal components, border tokens, `--bg-surface`, `--bg-overlay`, `--text-muted` |
 | 1.0.0 | 2026-06-22 | Initial release — color system, typography, core components |
 

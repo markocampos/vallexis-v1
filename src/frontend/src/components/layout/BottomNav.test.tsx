@@ -9,7 +9,6 @@ describe('BottomNav', () => {
     expect(screen.getByText('Projects')).toBeInTheDocument();
     expect(screen.getByText('Storage')).toBeInTheDocument();
     expect(screen.getByText('Billing')).toBeInTheDocument();
-    expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
   it('renders navigation links with correct hrefs', () => {

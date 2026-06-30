@@ -44,6 +44,58 @@ func main() {
 		defer rdb.Close()
 	}
 
+	// Background job to clean up stale builds
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			ctx := context.Background()
+			// Mark stale deployments as failed
+			// (We assume builds running for more than 15 minutes are crashed/stuck)
+			staleTime := time.Now().Add(-15 * time.Minute)
+
+			var staleProjectIDs []string
+			err := db.SelectContext(ctx, &staleProjectIDs,
+				`SELECT DISTINCT project_id FROM deployments 
+				 WHERE status IN ('building', 'queued', 'pending') AND created_at < $1`,
+				staleTime,
+			)
+			if err != nil {
+				log.Printf("cleanup job: failed to query stale project IDs: %v", err)
+				continue
+			}
+
+			if len(staleProjectIDs) > 0 {
+				res, err := db.ExecContext(ctx,
+					`UPDATE deployments 
+					 SET status = 'failed', completed_at = NOW()
+					 WHERE status IN ('building', 'queued', 'pending') AND created_at < $1`,
+					staleTime,
+				)
+				if err != nil {
+					log.Printf("cleanup job: failed to update stale deployments: %v", err)
+					continue
+				}
+				rowsAffected, _ := res.RowsAffected()
+				if rowsAffected > 0 {
+					log.Printf("cleanup job: marked %d stale deployments as failed", rowsAffected)
+				}
+
+				_, err = db.ExecContext(ctx,
+					`UPDATE projects SET status = 'failed' 
+					 WHERE id IN (
+						SELECT DISTINCT project_id FROM deployments 
+						WHERE status IN ('building', 'queued', 'pending') AND created_at < $1
+					 )`,
+					staleTime,
+				)
+				if err != nil {
+					log.Printf("cleanup job: failed to update project statuses: %v", err)
+				}
+			}
+		}
+	}()
+
 	keyData, err := os.ReadFile(cfg.JWTPrivateKeyPath)
 	if err != nil {
 		log.Fatalf("JWT private key not found at %s: %v", cfg.JWTPrivateKeyPath, err)
@@ -64,62 +116,100 @@ func main() {
 
 	r := httpx.NewRouter(cfg.CORSAllowedOrigins)
 
-	r.Get("/api/health", healthHandler(db, rdb))
+	health := healthHandler(db, rdb)
+	r.Get("/api/health", health)
+	r.Head("/api/health", health)
 
 	r.Route("/api/v1", func(v1 chi.Router) {
 		authSvc := auth.NewService(auth.DefaultConfig())
-		authH := auth.NewHandler(authSvc, db, privateKey)
-		v1.Post("/auth/register", authH.Register)
-		v1.Post("/auth/login", authH.Login)
+		oauthCfg := auth.OauthConfig{
+			OAuthRedirectBase:  cfg.OAuthRedirectBase,
+			GitHubClientID:     cfg.GitHubClientID,
+			GitHubClientSecret: cfg.GitHubClientSecret,
+			GoogleClientID:     cfg.GoogleClientID,
+			GoogleClientSecret: cfg.GoogleClientSecret,
+		}
+		authH := auth.NewHandler(authSvc, db, privateKey, rdb, cfg.FrontendURL, oauthCfg)
+		v1.With(httpx.LimitBodySize(1024 * 1024)).Post("/auth/register", authH.Register)
+		v1.With(httpx.LimitBodySize(1024 * 1024)).Post("/auth/login", authH.Login)
+		v1.With(httpx.LimitBodySize(1024 * 1024)).Post("/auth/refresh", authH.Refresh)
+		v1.Get("/auth/oauth/{provider}", authH.OAuthStart)
+		v1.Get("/auth/oauth/{provider}/callback", authH.OAuthCallback)
+
+		billingCfg := billing.HandlerConfig{
+			PayMongoSecretKey:    cfg.PayMongoSecretKey,
+			FrontendURL:          cfg.FrontendURL,
+			PayMongoWebhook:      cfg.PayMongoWebhookSec,
+			PayMongoProPrice:     cfg.PayMongoProPriceID,
+			PayMongoStarterPrice: cfg.PayMongoStarterPriceID,
+		}
+		billingH := billing.NewHandler(db, billingCfg)
+		v1.With(httpx.LimitBodySize(1024 * 1024)).Post("/billing/webhook", billingH.Webhook)
 
 		v1.Group(func(protected chi.Router) {
 			protected.Use(auth.RequireAuth(publicKey))
+			protected.Use(auth.Blocklist(rdb))
+			if rdb != nil {
+				protected.Use(httpx.GeneralRateLimit(100, time.Minute, func(ctx context.Context, key string) (bool, error) {
+					return cache.Allow(ctx, rdb, key, 100, time.Minute)
+				}))
+			}
 
-			projH := projects.NewHandler(db)
-			protected.Post("/projects", projH.Create)
-			protected.Get("/projects", projH.List)
-			protected.Delete("/projects/{id}", projH.Delete)
+			protected.Post("/auth/logout", authH.Logout)
 
-			deployH := deploys.NewHandler(db)
-			protected.Get("/projects/{projectId}/deploys", deployH.List)
-			protected.Post("/projects/{projectId}/deploys", deployH.Create)
-			protected.Get("/projects/{projectId}/deploys/current", deployH.GetCurrent)
-			protected.Get("/projects/{projectId}/deploys/stream", deployH.Stream)
+			// Standard API routes limited to 1MB request bodies
+			protected.Group(func(api chi.Router) {
+				api.Use(httpx.LimitBodySize(1024 * 1024))
 
-			billingH := billing.NewHandler(db)
-			protected.Get("/billing/subscription", billingH.GetSubscription)
-			protected.Get("/billing/usage", billingH.GetUsage)
-			protected.Post("/billing/subscribe", billingH.Subscribe)
-			protected.Post("/billing/cancel", billingH.Cancel)
+				projH := projects.NewHandler(db)
+				api.Post("/projects", projH.Create)
+				api.Get("/projects", projH.List)
+				api.Delete("/projects/{id}", projH.Delete)
 
+				deployH := deploys.NewHandler(db)
+				api.Get("/projects/{projectId}/deploys", deployH.List)
+				api.Post("/projects/{projectId}/deploys", deployH.Create)
+				api.Get("/projects/{projectId}/deploys/current", deployH.GetCurrent)
+				api.Get("/projects/{projectId}/deploys/stream", deployH.Stream)
+
+				api.Get("/billing/subscription", billingH.GetSubscription)
+				api.Get("/billing/usage", billingH.GetUsage)
+				api.Post("/billing/subscribe", billingH.Subscribe)
+				api.Post("/billing/cancel", billingH.Cancel)
+
+				storageH := storage.NewHandler(db)
+				api.Get("/storage/files", storageH.ListFiles)
+				api.Get("/storage/stats", storageH.GetStats)
+				api.Get("/storage/files/{id}", storageH.GetFile)
+				api.Delete("/storage/files/{id}", storageH.Delete)
+
+				seoH := seo.NewHandler(db)
+				api.Get("/seo/audits", seoH.ListAudits)
+				api.Post("/seo/audit", seoH.RunAudit)
+				api.Get("/seo/audits/{id}", seoH.GetAudit)
+
+				userH := users.NewHandler(db)
+				api.Get("/users/me", userH.GetMe)
+				api.Patch("/users/me", userH.UpdateMe)
+				api.Get("/users/settings", userH.GetSettings)
+				api.Put("/users/settings", userH.UpdateSettings)
+				api.Put("/users/password", userH.UpdatePassword)
+				api.Delete("/users/account", userH.DeleteAccount)
+			})
+
+			// Storage upload gets its own separate 100MB body size limit
 			storageH := storage.NewHandler(db)
-			protected.Get("/storage/files", storageH.ListFiles)
-			protected.Get("/storage/stats", storageH.GetStats)
-			protected.Post("/storage/upload", storageH.Upload)
-			protected.Get("/storage/files/{id}", storageH.GetFile)
-			protected.Delete("/storage/files/{id}", storageH.Delete)
-
-			seoH := seo.NewHandler(db)
-			protected.Get("/seo/audits", seoH.ListAudits)
-			protected.Post("/seo/audit", seoH.RunAudit)
-			protected.Get("/seo/audits/{id}", seoH.GetAudit)
-
-			userH := users.NewHandler(db)
-			protected.Get("/users/me", userH.GetMe)
-			protected.Patch("/users/me", userH.UpdateMe)
-			protected.Get("/users/settings", userH.GetSettings)
-			protected.Put("/users/settings", userH.UpdateSettings)
-			protected.Put("/users/password", userH.UpdatePassword)
-			protected.Delete("/users/account", userH.DeleteAccount)
+			protected.With(httpx.LimitBodySize(100 * 1024 * 1024)).Post("/storage/upload", storageH.Upload)
 		})
 	})
 
 	srv := &http.Server{
-		Addr:         ":" + cfg.APIPort,
-		Handler:      r,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:              ":" + cfg.APIPort,
+		Handler:           r,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	go func() {

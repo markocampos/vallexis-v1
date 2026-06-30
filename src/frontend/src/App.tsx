@@ -1,30 +1,32 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { ThemeProvider } from '@/context/ThemeContext';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { ToastProvider } from '@/components/ui/toaster';
 import { PageLoader } from '@/components/ui/loading-spinner';
 import { Layout } from '@/components/layout/Layout';
-import { Landing } from '@/pages/Landing';
-import { Login } from '@/pages/Login';
-import { Register } from '@/pages/Register';
-import { Dashboard } from '@/pages/Dashboard';
-import { Projects } from '@/pages/Projects';
-import { CreateProject } from '@/pages/CreateProject';
-import { Deploys } from '@/pages/Deploys';
-import { Billing } from '@/pages/Billing';
-import { Storage } from '@/pages/Storage';
-import { SeoAudit } from '@/pages/SeoAudit';
-import { Settings } from '@/pages/Settings';
-import { Docs } from '@/pages/Docs';
-import { FeaturesPage } from '@/pages/FeaturesPage';
-import { PricingPage } from '@/pages/PricingPage';
-import { ArchitecturePage } from '@/pages/ArchitecturePage';
-import { FaqPage } from '@/pages/FaqPage';
-import { StatusPage } from '@/pages/StatusPage';
-import { SecurityPage } from '@/pages/SecurityPage';
-import { ProductPage } from '@/pages/ProductPage';
+
+const Landing = lazy(() => import('@/pages/Landing').then(module => ({ default: module.Landing })));
+const Login = lazy(() => import('@/pages/Login').then(module => ({ default: module.Login })));
+const Register = lazy(() => import('@/pages/Register').then(module => ({ default: module.Register })));
+const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Projects = lazy(() => import('@/pages/Projects').then(module => ({ default: module.Projects })));
+const CreateProject = lazy(() => import('@/pages/CreateProject').then(module => ({ default: module.CreateProject })));
+const Deploys = lazy(() => import('@/pages/Deploys').then(module => ({ default: module.Deploys })));
+const Billing = lazy(() => import('@/pages/Billing').then(module => ({ default: module.Billing })));
+const Storage = lazy(() => import('@/pages/Storage').then(module => ({ default: module.Storage })));
+const SeoAudit = lazy(() => import('@/pages/SeoAudit').then(module => ({ default: module.SeoAudit })));
+const Settings = lazy(() => import('@/pages/Settings').then(module => ({ default: module.Settings })));
+const Docs = lazy(() => import('@/pages/Docs').then(module => ({ default: module.Docs })));
+const FeaturesPage = lazy(() => import('@/pages/FeaturesPage').then(module => ({ default: module.FeaturesPage })));
+const PricingPage = lazy(() => import('@/pages/PricingPage').then(module => ({ default: module.PricingPage })));
+const ArchitecturePage = lazy(() => import('@/pages/ArchitecturePage').then(module => ({ default: module.ArchitecturePage })));
+const FaqPage = lazy(() => import('@/pages/FaqPage').then(module => ({ default: module.FaqPage })));
+const StatusPage = lazy(() => import('@/pages/StatusPage').then(module => ({ default: module.StatusPage })));
+const SecurityPage = lazy(() => import('@/pages/SecurityPage').then(module => ({ default: module.SecurityPage })));
+const ProductPage = lazy(() => import('@/pages/ProductPage').then(module => ({ default: module.ProductPage })));
+const NotFound = lazy(() => import('@/pages/NotFound').then(module => ({ default: module.NotFound })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,16 +51,40 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function TitleUpdater() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    let title = 'Vallexis';
+
+    if (path === '/') {
+      title = 'Vallexis - PaaS for Solo Founders';
+    } else {
+      const parts = path.split('/').filter(Boolean);
+      if (parts.length > 0) {
+        const lastPart = parts[parts.length - 1];
+        const formatted = lastPart.charAt(0).toUpperCase() + lastPart.slice(1).replace(/-/g, ' ');
+        title = `${formatted} - Vallexis`;
+      }
+    }
+    document.title = title;
+  }, [location]);
+
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
           <ToastProvider>
             <AuthProvider>
               <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Landing />} />
+                <TitleUpdater />
+                <Suspense fallback={<PageLoader text="Loading page..." />}>
+                  <Routes>
+                    <Route path="/" element={<Landing />} />
                   <Route path="/product" element={<ProductPage />} />
                   <Route path="/docs" element={<Docs />} />
                   <Route path="/features" element={<FeaturesPage />} />
@@ -100,12 +126,12 @@ function App() {
                     <Route path="seo" element={<SeoAudit />} />
                     <Route path="settings" element={<Settings />} />
                   </Route>
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
               </BrowserRouter>
             </AuthProvider>
           </ToastProvider>
-        </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

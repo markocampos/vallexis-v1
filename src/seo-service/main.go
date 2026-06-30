@@ -17,12 +17,14 @@ func main() {
 	cfg := config.Load()
 
 	r := httpx.NewRouter(cfg.CORSAllowedOrigins)
-	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+	health := func(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteJSON(w, http.StatusOK, map[string]string{
 			"status":  "ok",
 			"service": "seo-service",
 		})
-	})
+	}
+	r.Get("/health", health)
+	r.Head("/health", health)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.SEOPort,
